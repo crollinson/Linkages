@@ -20,7 +20,7 @@ C     OF UP TO 10 SPECIES SPECIFIED IN INPUT.
 C
 C      JOHN PASTOR. APRIL 1986. UNIV. OF MINNESOTA.
 C
-C                         MAIN PROGRAM
+C                        MAIN PROGRAM
 C
 C
 C     THE MAIN PROGRAM ESTABLISHES ALL COMMON BLOCKS,
@@ -53,11 +53,15 @@ C
       INTEGER SPEC,BMSPEC
       INTEGER USEED
       LOGICAL SWITCH,SWTCH
+      real rand
+      integer irandom
+      integer*4 timeArray(3)
+
 C.....
 C.....SEEDS FOR RANDOM NUMBER GENERATOR
 C.....
-C.....USEED(1) - KILLTREES- AGE DEPENDENT MORTALITY
-C.....USEED(2) - KILLTREES- SLOW GROWTH MORTALITY
+C.....USEED(1) - KILL- AGE DEPENDENT MORTALITY
+C.....USEED(2) - KILL- SLOW GROWTH MORTALITY
 C.....USEED(3) - NOT CURRENTLY USED
 C.....USEED(4) - BIRTH- SELECT NUMBER OF TREES TO SPROUT
 C.....USEED(5) - NOT CURRENTLY USED
@@ -71,24 +75,9 @@ C.....USEED(12) AND (13) - TEMPE- STOCHASTIC VARIATION OF TEMPERATURE
 C.....USEED(14) AND (15) - MOIST- STOCHASTIC VARIATION OF RAINFALL
 C.....
 C.....
-C.....INITIALIZE SEED FOR RANDOM NUMBER GENERATOR
-C.....
-      USEED(1) = 75364
-      USEED(2) = 82625
-      USEED(3) = 79154
-      USEED(4) = 79324
-      USEED(5) = 31697
-      USEED(6) = 91917
-      USEED(7) = 89819
-      USEED(8) = 37517
-      USEED(9) = 17119
-      USEED(10) = 72641
-      USEED(11) = 53797
-      USEED(12) = 91712
-      USEED(13) = 73319
-      USEED(14) = 51291
-      USEED(15) = 92761
-      OPEN(UNIT=6,FILE='OUT.FIL',ACCESS='SEQUENTIAL',STATUS='UNKNOWN')
+      OPEN(UNIT=6,FILE='OUT.csv',ACCESS='SEQUENTIAL',STATUS='UNKNOWN')
+C.....OPEN(unit=9,file='test.txt',status='unknown')
+      
 C.....
 C.....IPLOT - CURRENT PLOT
 C.....KYR - CURRENT YEAR
@@ -104,27 +93,55 @@ C.....
 C.....BEGIN PLOT LOOP
 C.....
        DO 60 K=1,KLAST
+       
 C.....
 C.....INITIALIZE ARRAYS TO START ON BARE PLOT
 C.....
        CALL PLOTIN(IPLOT)
        KYR=0
+      
+C.....INITIALIZE SEED FOR RANDOM NUMBER GENERATOR
+C..... ann not sure if this is the right place for the random number generator. But! I 
+c..... figure out that these seeds map to a line between 0 and 1 and it is mostly used
+c..... to find a random climate variable. But! we have sort of real data for that
+c..... so that's good! Let me know if you agree that that's what is going on.
+      call itime(timeArray)
+      irandom = rand ( timeArray(1)+timeArray(2)+timeArray(3) )
+      
+      do irandom =1, 11
+        useed(irandom) = 10000*rand(0) + K*10*rand(0)
+c        print *, useed(irandom)
+      end do  
+      
+      do irandom =12, 15
+        useed(irandom) = 10000*rand(0) + K*10*rand(0)
+c       print *, useed(irandom)
+      end do  
+      
 C.....
 C.....ANNUAL LOOP WITHIN EACH PLOT
 C.....
          DO 50 I=1,NYEAR
             KYR = I
+
       CALL TEMPE(DEGD,KYR)
       CALL MOIST(KYR)
+C..... We will have to write new subroutines for TEMPE and MOIST because right now they 
+C....."interpolate" a temperature and precip for each month. We will just want the model 
+C....to read the correct data
       CALL DECOMP(KYR)
       CALL GMULT(KYR)
       CALL BIRTH(KYR)
       CALL GROW(KYR)
       CALL KILLTREES(KYR)
+C.....if(kyr .eq. 1 .or. mod(kyr,kprnt) .eq. 0)
+C.....#           call output(kyr,iplot)
       IF(KYR.EQ.1) CALL OUTPUT(KYR,IPLOT)
       IF(MOD(KYR,KPRNT) .EQ. 0) CALL OUTPUT(KYR,IPLOT)
-   50       CONTINUE
-   60       CONTINUE
+   50    CONTINUE
+
+   60    CONTINUE
+      
       STOP
       END
 C
@@ -138,9 +155,9 @@ C     LESS THAN OPTIMUM FOR GROWTH. SOIL MOISTURE AND DEGREE DAY
 C     MULTIPLIERS ARE SUPPLIED BY SUBROUTINE GMULT.
 C     A SPECIES CAN HAVE SPROUTS IF AT LEAST ONE
 C     TREE WITH DIAMETER BETWEEN SPRTMN AND SPRTMX DIED LAST
-C     YEAR (KSPRT INCREMENTED BY 1 IN KILLTREES).
+C     YEAR (KSPRT INCREMENTED BY 1 IN KILL).
 C     RANDOM NUMBERS USED TO DETERMINE OCCURENCE OF BROWSING, NUMBERS
-C     OF SEEDLINGS AND SPROUTS, AND DBH SUPPLIED BY URAND.
+C     OF SEEDLINGS AND SPROUTS, AND DBH SUPPLIED BY rand.
 C
       SUBROUTINE BIRTH(KYR)
       COMMON/WATER/T(12),VT(12),RT(12),R(12),VR(12),FC,DRY,BGS,EGS,PLAT,
@@ -217,7 +234,8 @@ C.....
 C.....
 C.....BROWSE - A RANDOM NUMBER SIMULATING THE OCCURENCE OF BROWSING
 C.....
-      YFL=URAND(USEED(7))
+      YFL=rand(0)
+C.....print *, YFL
       BROWSE=YFL
          IF (BROWSE.GT..5) SWTCH(4) = .FALSE.
       IF(FOLA .LE. .05) SWTCH(5) = .FALSE.
@@ -292,8 +310,10 @@ C.....REDUCE MAXIMUM NUMBER OF SEEDLINGS TO THE EXTENT THAT LIGHT,
 C.....SOIL MOISTURE, AND DEGREE DAYS ARE LESS THAN OPTIMUM FOR
 C.....GROWTH OF EACH SPECIES
 C.....
-       YFL=URAND(USEED(9))
+       YFL=rand(0)
+C..... print *, YFL
        NPLANT=MPLANT(NSP)*SLITE*SMGF(NSP)*DEGDGF(NSP)*YFL
+C..... print *, NPLANT
 C.....
 C.....SEE IF ANY STUMPS OF THIS SPECIES ARE AVAILABLE FOR SPROUTING
 C.....
@@ -306,7 +326,7 @@ C.....
 C.....IF AVAILABLE LIGHT IS GREATER THAN 50% OF FULL SUNLIGHT,
 C.....DETERMINE NUMBER OF STUMP SPROUTS AND ADD TO NPLANT
 C.....
-       YFL=URAND(USEED(4))
+       YFL=rand(0)
        IF(AL.GE..50)
      & NPLANT=NPLANT+(SPRTND(NSP)*SLITE*SMGF(NSP)*DEGDGF(NSP)*
      & KSPRT(NSP)*YFL)
@@ -323,6 +343,11 @@ C.....
          DO 90 J=1,NPLANT
             NTOT = NTOT+1
             IF (NTOT.GT.1500) CALL ERR6
+c ann changed NTOT.GT.1500. There are several places where the number of stems can't 
+C exceed 1500. I asked Pastor about this and he told me it seemed reasonable to him but 
+C that i could take it out if I wanted to. I wanted to take it out because it gives me the
+c error more with more plots, so in some places I took it out. If I take it out of the "kill"
+c subroutine I can't run the model. 
             NSUM = NSUM+1
             NTREES(NSP) = NTREES(NSP)+1
             ITEMP(NSUM) = 0
@@ -330,7 +355,7 @@ C.....
 C.....CALCULATE DBH FOR NEW TREES. DBH = 1.42CM +/- RANDOM AMOUNT
 C.....
        SIZE=1.27
-       YFL=URAND(USEED(11))
+       YFL=rand(0)
             DTEMP(NSUM) = SIZE+.30*(1.0-YFL)**3
             NTEMP(NSUM) = 0
    90       CONTINUE
@@ -373,7 +398,7 @@ C
 C     SUBROUTINE DECOMP CALCULATES CARBON AND NITROGEN FLOWS THROUGH
 C     SOIL. AVAILABLE N (AVAILN) IS USED IN GMULT TO CALCULATE
 C     SOIL NITROGEN GROWTH MULTIPLIERS. AET IS FED IN FROM MOIST.
-C     THIS YEAR'S LEAF, TWIG, ROOT, AND WOOD LITTER IS FED IN FROM KILLTREES
+C     THIS YEAR'S LEAF, TWIG, ROOT, AND WOOD LITTER IS FED IN FROM KILL
 C     (ARRAY TYL). THE SIMULATION STARTS ON BARE GROUND (ONLY HUMUS
 C     PRESENT. BASESC AND BASESN ARE STARTING HUMUS WEIGHT AND N
 C     CONTENTS READ IN INPUT). THREE TYPES OF SOIL ORGANIC MATTER ARE
@@ -673,7 +698,7 @@ C
       GO TO 110
       ENTRY ERR5
       WRITE(6,50)
-  50  FORMAT(' NUMBER OF TREES, NTOT1, HAS EXCEEDED 1500 IN KILLTREES.')
+  50  FORMAT(' NUMBER OF TREES, NTOT1, HAS EXCEEDED 1500 IN KILL.')
       GO TO 110
       ENTRY ERR6
       WRITE(6,60)
@@ -707,8 +732,10 @@ C                         SUBROUTINE GGNORD
 C
 C
 C     SUBROUTINE GGNORD CALCULATES NORMALLY DISTRIBUTED RANDOM NUMBERS
-C     SUPPLIED BY URAND. IT IS CALLED FROM SUBROUTINES TEMPE AND MOIST.
+C     SUPPLIED BY rand. IT IS CALLED FROM SUBROUTINES TEMPE AND MOIST.
 C
+
+c ann I think we are going to want to get rid of this.
       SUBROUTINE GGNORD(NSEED1,NSEED2,Z)
       DIMENSION Z(1)
       DATA PI2/0.62831853E01/
@@ -716,17 +743,20 @@ C
 C.....
 C.....FIND RANDOM NUMBERS
 C.....
-      A1 = URAND(NSEED1)
-      A2 = URAND(NSEED2)
+      A1 = rand(NSEED1)
+      A2 = rand(NSEED2)
       K = K+1
 C.....
 C.....CALCULATE NORMALLY DISTRIBUTED RANDOM NUMBERS.
 C.....(EMSHOFF AND SISSON.1970.DESIGN AND USE OF COMPUTER
 C.....SIMULATION MODELS. MACMILLAN)
 C.....
-      Z(K) = SQRT(-.2E01*ALOG(A1))*SIN(PI2*A2)
+c ann      Z(K) = SQRT(-.2E01*ALOG(A1))*SIN(PI2*A2)
+c ann      K = K+1
+c ann      Z(K) = SQRT(-0.2E01*ALOG(A1))*COS(PI2*A2)
+      Z(K) = rand(0)
       K = K+1
-      Z(K) = SQRT(-0.2E01*ALOG(A1))*COS(PI2*A2)
+      Z(K) = rand(0)
       RETURN
       END
 C
@@ -965,6 +995,9 @@ C      AND WILTING POINTS, MONTHLY TEMPERATURE, PRECIPITATION, AND THEIR
 C      STND DEV, SPECIES PARAMETERS, DECOMPOSITION PARAMETERS, AND
 C      STARTING HUMUS WEIGHT AND N CONTENT
 C
+
+c ann I'm going to have to change this.
+
       SUBROUTINE INPUT
       COMMON/INTERP/IPOLAT,X(10)
       COMMON/WATER/T(12),VT(12),RT(12),R(12),VR(12),FC,DRY,BGS,EGS,PLAT,
@@ -994,10 +1027,11 @@ C.....KWRITE - COUNTS NUMBER OF TIMES OUTPUT IS CALLED.
 C.....         WHEN KWRITE=NWRITE, MEANS AND CONFIDENCE INTERVALS
 C.....         OF SELECTED VARIABLES ARE CALCULATED IN OUTPUT.
 C.....
-      OPEN(UNIT=5,FILE='LINKAGES.DAT',ACCESS='SEQUENTIAL',STATUS='OLD')
+      OPEN(UNIT=5,FILE='test_text.txt',ACCESS='SEQUENTIAL',STATUS='OLD')
       READ(5,1005) KPRNT,KLAST,NYEAR
 C      OPEN(UNIT=9,FILE='OUT.FIL',ACCESS='SEQUENTIAL',STATUS='UNKNOWN')
- 1005 FORMAT(6X,I3,7X,I3,7X,I5)
+ 1005 FORMAT(i3,i3,i5)
+C ann have to change numbers above if you are going to change input
       IF(KLAST.GT.100) CALL ERR1
       NMAX=NYEAR/KPRNT + 1
 C      IF(NMAX.GT.70) CALL ERR2
@@ -1008,59 +1042,62 @@ C.....IPOLAT - NUMBER OF BREAK POINTS IN LINEAR INTERPOLATIONS
 C.....         (EQUALS NUMBER OF ENTRIES IN ARRAY X)
 C.....
       READ(5,1010) IPOLAT
- 1010 FORMAT(7X,I2)
+ 1010 FORMAT(I2)
 C.....
 C.....ARRAY X CONTAINS YEARS IN WHICH CLIMATE CHANGES AND BETWEEN
 C.....WHICH LINEAR INTERPOLATIONS MUST BE MADE. THE FIRST ENTRY
 C.....MUST BE EQUAL TO ZERO AND THE LAST EQUAL TO NYEAR.
 C.....
-      READ(5,1015) (X(I),I=1,10)
- 1015 FORMAT(10F7.0)
+      READ(*,*) (X(I),I=1,IPOLAT)
+C.....1015 FORMAT(10F7.0)
 C.....
 C.....READ LATITUDE, LONGITUDE, DAYS GROWING SEASON BEGINS AND ENDS,
 C.....SOIL FIELD MOISTURE CAPACITY AND WILTING POINT
 C.....
-      READ(5,1020) PLAT,PLONG,BGS,EGS,FC,DRY
+      READ(*,*) PLAT,PLONG,BGS,EGS,FC,DRY
       TGS = EGS-BGS+1
- 1020 FORMAT(5X,F5.2,7X,F5.1,5X,F4.0,5X,F4.0,4X,F4.1,5X,F4.1)
+C.....1020 FORMAT(F5.2,F5.1,F4.0,F4.0,F4.1,F4.1)
+C.....1020 FORMAT(5X,F5.2,7X,F5.1,5X,F4.0,5X,F4.0,4X,F4.1,5X,F4.1)
 C.....
 C.....READ MONTHLY TEMPERATURE, STND DEV, PRECIPITATION, STND DEV
 C.....
-      READ(5,1035) ((TSAV(J,K),K=1,12),J=1,IPOLAT)
-      READ(5,1035) ((VTSAV(J,K),K=1,12),J=1,IPOLAT)
-      READ(5,1035) ((RSAV(J,K),K=1,12),J=1,IPOLAT)
-      READ(5,1035) ((VRSAV(J,K),K=1,12),J=1,IPOLAT)
- 1035 FORMAT(8X,12F6.0)
+      OPEN(UNIT=3,FILE='test_text1.txt',STATUS='OLD')
+      READ(3,1035) ((TSAV(J,K),K=1,12),J=1,IPOLAT)
+      READ(3,1035) ((VTSAV(J,K),K=1,12),J=1,IPOLAT)
+      READ(3,1035) ((RSAV(J,K),K=1,12),J=1,IPOLAT)
+      READ(3,1035) ((VRSAV(J,K),K=1,12),J=1,IPOLAT)
+ 1035 FORMAT(12F6.2)
 C.....
 C.....WRITE CLIMATE DATA TO PRINTER
 C.....
-      WRITE(6,1025) PLAT,PLONG,BGS,EGS
+c ann     WRITE(6,1025) PLAT,PLONG,BGS,EGS
  1025 FORMAT(' LATITUDE=',F5.1,'  LONGITUDE=',F5.1,
      1'  GROWING SEASON: BEGINS DAY ',F5.1,
      2'  ENDS DAY ',F5.1)
-      WRITE(6,7036)
+c ann     WRITE(6,7036)
  7036 FORMAT('  '/13X,'J',5X,'F',5X,'M',5X,'A',5X,'M',5X,'J',5X,'J',5X,
      1'A',5X,'S',5X,'O',5X,'N',5X,'D')
-      WRITE(6,7037) (TSAV(1,K),K=1,12)
+c ann      WRITE(6,7037) (TSAV(1,K),K=1,12)
  7037 FORMAT(' TEMP (C)',12F6.1)
-      WRITE(6,7038) (VTSAV(1,K),K=1,12)
+c ann      WRITE(6,7038) (VTSAV(1,K),K=1,12)
  7038 FORMAT(' STND DEV',12F6.1)
-      WRITE(6,7039) (RSAV(1,K),K=1,12)
+c ann      WRITE(6,7039) (RSAV(1,K),K=1,12)
  7039 FORMAT(' PPT (CM)',12F6.1)
-      WRITE(6,7040) (VRSAV(1,K),K=1,12)
+c ann      WRITE(6,7040) (VRSAV(1,K),K=1,12)
  7040 FORMAT(' STND DEV',12F6.1/)
 C.....
 C.....READ NUMBER OF SPECIES (NSPEC)
 C.....
-      READ(5,9000) NSPEC
+      OPEN(UNIT=4,FILE='SPP.DAT',STATUS='OLD')
+      READ(4,9000) NSPEC
       IF(NSPEC.GT.100) CALL ERR3
 C.....
 C.....READ NUMBER OF SPECIES (BMSPEC) AND
 C.....SPECIES NUMBERS (SPEC) FOR BIOMASS ANALYSIS
-C.....
-      READ(5,5000) BMSPEC
+C.....      
+      READ(4,5000) BMSPEC
       IF(BMSPEC.GT.10) CALL ERR11
-      READ(5,5001) (SPEC(ISP), ISP=1,BMSPEC)
+      READ(4,5001) (SPEC(ISP), ISP=1,BMSPEC)
  5000 FORMAT(7X, I3)
  5001 FORMAT(10I3)
 C.....
@@ -1088,14 +1125,14 @@ C.....SLTA,SLTB - PARAMETERS TO CALCULATE CROWN AREA
 C.....RTST - ROOT/SHOOT RATIO
 C.....FRT - FOLIAGE RETENTION TIME IN YEARS
 C.....
-       WRITE(6,4000)
+c ann       WRITE(6,4000)
  4000  FORMAT('  AAA',22X,'DMAX',2X,'DMIN',4X,'B3',4X,'B2',2X,'ITOL',
      & 1X,'AGEMX',3X,'G',2X,'SPRTND',1X,'SPRTMN',1X,'SPRTMX',1X,
      & 'SWITCH',1X,'MPLANT',1X,'NUM'/'   D3',1X,'FROST',1X,'TL',2X,
      & 'CM1',4X,'CM2',4X,'CM3',4X,'CM4',1X,'CM5',2X,'FWT',2X,'SLTA',
      & 2X,'SLTB',1X,'RTST',1X,'FRT'/)
       DO 10 J=1,NSPEC
-         READ(5,9001) (AAA(J,I),I=1,6),DMAX(J),DMIN(J),B3(J),B2(J),
+         READ(4,9001) (AAA(J,I),I=1,6),DMAX(J),DMIN(J),B3(J),B2(J),
      >    ITOL(J),AGEMX(J),G(J),SPRTND(J),SPRTMN(J),SPRTMX(J),
      >   (SWITCH(J,I),I=1,5),MPLANT(J),NUM,D3(J),FROST(J),
      >   TL(J),CM1(J),CM2(J),CM3(J),CM4(J),CM5(J),FWT(J),SLTA(J),
@@ -1114,43 +1151,43 @@ C.....
 C.....
 C.....WRITE SPECIES PARAMETERS TO PRINTER
 C.....
-         WRITE(6,9002) (AAA(J,I),I=1,6),DMAX(J),DMIN(J),B3(J),B2(J),
-     >    ITOL(J),AGEMX(J),G(J),SPRTND(J),SPRTMN(J),SPRTMX(J),
-     >   (SWITCH(J,I),I=1,5),MPLANT(J),NUM,D3(J),FROST(J),
-     >   TL(J),CM1(J),CM2(J),CM3(J),CM4(J),CM5(J),FWT(J),SLTA(J),
-     >    SLTB(J),RTST(J),FRT(J)
+c ann         WRITE(6,9002) (AAA(J,I),I=1,6),DMAX(J),DMIN(J),B3(J),B2(J),
+c ann     >    ITOL(J),AGEMX(J),G(J),SPRTND(J),SPRTMN(J),SPRTMX(J),
+c ann     >   (SWITCH(J,I),I=1,5),MPLANT(J),NUM,D3(J),FROST(J),
+c ann     >   TL(J),CM1(J),CM2(J),CM3(J),CM4(J),CM5(J),FWT(J),SLTA(J),
+c ann     >    SLTB(J),RTST(J),FRT(J)
    10    CONTINUE
 C.....
 C.....INPUT FOREST FLOOR DECOMPOSITION PARAMETERS
 C.....NLVAR - # OF VARIABLES USED TO CALCULATE DECOMPOSITION
 C.....NLT - # OF LITTER TYPES
 C.....
-      READ(5,9003) NLVAR,NLT
+      READ(4,9003) NLVAR,NLT
  9003 FORMAT(8X,I2,7X,I2)
       DO 15 I=1,NLT
-      READ(5,9004) (FDAT(I,J),J=1,NLVAR)
+      READ(4,9004) (FDAT(I,J),J=1,NLVAR)
  9004 FORMAT(F3.0,3F6.4,F4.0,F3.0,F5.3,F7.4,F5.3,F4.2)
    15 CONTINUE
 C.....
 C.....NCOHRT -  NUMBER OF LITTER COHORTS INITIALLY PRESENT
 C.....IF ONLY HUMUS IS PRESENT, NCOHRT = 1
 C.....
-      READ(5,9005) NCOHRT
+      READ(4,9005) NCOHRT
  9005 FORMAT(9X,I1)
       IF(NCOHRT.GT.100) CALL ERR4
 C.....
 C.....BASESC - STARTING HUMUS WEIGHT (T/HA)
 C.....BASESN - STARTING HUMUS N CONTENT (T/HA)
 C.....
-      READ(5,9006) BASESC,BASESN
+      READ(4,9006) BASESC,BASESN
  9006 FORMAT(F3.0,F6.4)
 C.....
 C.....WRITE INITIAL SOIL CONDITIONS TO PRINTER
 C.....
-      WRITE(6,9007) FC,DRY
+c ann      WRITE(6,9007) FC,DRY
  9007 FORMAT('  '/' FIELD CAPACITY (CM)=',F5.1,' WILTING POINT (CM)=',
      &F5.1)
-      WRITE(6,9008) BASESC,BASESN
+c ann     WRITE(6,9008) BASESC,BASESN
  9008 FORMAT(' INITIAL SOIL O.M.=',F4.1,' INITIAL SOIL N=',F5.2)
       RETURN
  9000 FORMAT(6X,I3)
@@ -1162,14 +1199,14 @@ C.....
      2  2F6.3,F4.1,F5.0/)
       END
 C
-C                      SUBROUTINE KILLTREES
+C                      SUBROUTINE KILL
 C
 C
-C     SUBROUTINE KILLTREES KILLS TREES BY AGE DEPENDENT MORTALITY (ONLY 1%
+C     SUBROUTINE KILL KILLS TREES BY AGE DEPENDENT MORTALITY (ONLY 1%
 C     REACH MAXIMUM AGE) AND AGE INDEPENDENT MORTALITY (PROBABILITY OF
 C     SURVIVING 10 CONSECUTIVE YEARS OF SLOW GROWTH (SEE GROW) = 1%).
 C     DECISIONS ON WHETHER OR NOT TO KILL A TREE ARE PARTLY BASED ON
-C     RANDOM NUMBERS SUPPLIED BY URAND.
+C     RANDOM NUMBERS SUPPLIED BY rand.
 C     KILL ALSO CALCULATES LITTER AMOUNTS, WHICH ARE DECAYED IN
 C     SUBROUTINE DECOMP.
 C
@@ -1220,9 +1257,9 @@ C.....CALCULATE BASAL AREA
 C.....
        BA=BA+.0314*(DBH(K)*0.5)**2
 C.....
-C.....KILLTREES TREES BASED ON PROBABILITY THAT ONLY 1% REACH MAXIMUM AGE
+C.....KILL TREES BASED ON PROBABILITY THAT ONLY 1% REACH MAXIMUM AGE
 C.....
-       YFL=URAND(USEED(1))
+       YFL=rand(0)
             IF (YFL.LE.(4.605/AGEMX(I))) GO TO 10
 C.....
 C.....CHECK TO SEE IF THERE WAS ANY GROWTH FOR TREE
@@ -1230,7 +1267,7 @@ C.....IF NOT, INCREASE PROBABILITY OF DIEING SO THAT THE TREE HAS
 C.....A 1% CHANCE OF SURVIVING 10 CONSECUTIVE YEARS OF SLOW GROWTH
 C.....
             IF (NOGRO(K).GT. -2) GO TO 19
-            YFL=URAND(USEED(2))
+            YFL=rand(0)
             IF (YFL.GT.0.368) GO TO 19
    10       CONTINUE
             NTREES(I) = NTREES(I)-1
@@ -1299,6 +1336,7 @@ C.....
       IF (NTOT.EQ.0) RETURN
       NTOT1 = K+1
       IF(NTOT1.GT.1500) CALL ERR5
+C.....can't get rid of this one...
 C.....
 C.....ELIMINATE DEAD TREES
 C.....
@@ -1390,7 +1428,7 @@ C            (-15 BARS)
 C     BGS = YEAR DAY ON WHICH THE GROWING SEASON BEGINS
 C     EGS = YEAR DAY ON WHICH THE GROWING SEASON ENDS
 C     PLAT = LATITUDE OF PLOT (DEGREES NORTH)
-C
+C ann I think AET is the same for each plot. That's why there aren't confidence intervals
       SUBROUTINE MOIST(KYR)
       COMMON/WATER/T(12),VT(12),RT(12),R(12),VR(12),FC,DRY,BGS,EGS,PLAT,
      1FJ,AET
@@ -1607,6 +1645,9 @@ C     LEVEL VARIABLES AT THE END OF THE RUN.
 C     ARRAY ST CONTAIN'S STUDENT'S T FOR N=1 TO GREATER THAN OR
 C     EQUAL TO 30.
 C
+
+C we fixed this to output csv files
+
       SUBROUTINE OUTPUT(KYR,IPLOT)
       COMMON/WATER/T(12),VT(12),RT(12),R(12),VR(12),FC,DRY,BGS,EGS,PLAT,
      1FJ,AET
@@ -1665,6 +1706,24 @@ C.....
 C.....CALCULATE SPECIES BIOMASS, TOTAL BIOMASS, TOTAL NUMBER OF
 C.....STEMS, LEAF AREA, AND TOTAL WOODY PRODUCTION
 C.....
+C..... ann don't know where this came from
+C.....nl = 1
+C.....do 20 i =1,nspec
+C.....   bar(i)=0.0
+C.....   if(ntrees(i) .eq. 0 .and.
+C.....#       (kyr .eq. 50 .or. kyr .eq. 600 .or. kyr .eq. 1200))
+C.....#       write(3,'(4i5)')
+C.....#       iplot, kyr, i, ntrees(i)
+C.....   if (ntrees(i).eq.0) go to 20
+C.....   nu = nl+ntrees(i)-1
+C.....    if(kyr .eq. 50 .or. kyr .eq. 600 .or. kyr .eq. 1200)
+C.....#       write(3,'(4i5,(16f6.1))')
+C.....#       iplot, kyr, i, ntrees(i), (dbh(j),j = nl,nu)
+C.....    ret=frt(i)
+C.....   do 10 j=nl,nu
+C.....   age=iage(j)
+C.....   if(age.lt.ret) ret=age
+         
       NL = 1
       DO 20 I =1,NSPEC
          BAR(I)=0.0
@@ -1703,7 +1762,7 @@ C.....
 C.....
 C.....CALCULATE TOTAL NUMBER OF TREES PER PLOT
 C.....
-         NTOT = NTOT +NTREES(I)
+         NTOT = NTOT + NTREES(I)
          IF(NTOT.GT.1500) CALL ERR7
    20    CONTINUE
 C.....
@@ -1827,7 +1886,7 @@ C.....CHOOSE APPROPRIATE STUDENT'S T FOR CONFIDENCE INTERVALS
 C.....
       L = KLAST
       IF(L.GT.30) L=30
-      TS=ST(L)
+      TS =ST(L)
 C.....
 C.....BEGIN MAIN STATISTICAL LOOP
 C.....
@@ -1938,48 +1997,61 @@ C.....
 C.....
 C.....WRITE STATISTICS TO PRINTER
 C.....
-      WRITE(6,3003)
-      WRITE(6,3001)
- 3001 FORMAT(' '/'  YR',5X,'NUM',5X,'A.G.',4X,'LEAF',4X,'LEAF ',3X,
-     &'A.G.',4X,'AVAIL',3X,'HUMUS',3X,'SOIL',4X,'SOIL',4X,'AET')
-      WRITE(6,3002)
+
+c ann      WRITE(6,3003)
+c ann WRITE(6,3001)
+c ann wrote below
+ 3001 FORMAT(' '/'  YR,','NUM,','A.G.,','LEAF,','LEAF,',
+     &'A.G.,','AVAIL,','HUMUS,','SOIL,','SOIL,','AET')
+c ann    WRITE(6,3002)
  3002 FORMAT(' ',7X,'STEMS',2X,'BIOMASS',2X,'LITTER',2X,'LITR N',3X,
      &'NPP',7X,'N',6X,'C:N',4X,'CO2-C',3X,'O.M.')
-      WRITE(6,3003)
+c ann      WRITE(6,3003)
  3003 FORMAT(' '/' --------------------------------------------------',
      &'---------------------------------'/)
-      WRITE(6,3004) KLAST
+c ann      WRITE(6,3004) KLAST
  3004 FORMAT(' '/' ',26X,' AVERAGE ACROSS ',I3,' PLOTS')
-      WRITE(6,3005)
+c ann      WRITE(6,3005)
  3005 FORMAT(' ',8X,'------------------------------------------------',
      &'---------------------------'/)
       WRITE(6,3000) ((AVG(I,J),J=1,11),I=1,NMAX)
       IF(PLOTS.EQ.1.) GO TO 99
-      WRITE(6,3006)
+c ann      WRITE(6,3006)
  3006 FORMAT(' '/' ',26X,' 95% CONFIDENCE INTERVALS')
-      WRITE(6,3005)
-      WRITE(6,3000) ((CONF(I,J),J=1,11),I=1,NMAX)
+c ann      WRITE(6,3005)
+      
+      do i = 1,nmax
+         write(6,3000) (conf(i,j),j=1,11)
+      enddo
+
   99  CONTINUE
-      WRITE(6,3005)
-      WRITE(6,3095)
+c ann     WRITE(6,3005)
+c ann      WRITE(6,3095)
  3095 FORMAT(' '/' ',31X,' SPECIES BIOMASS')
       WRITE(6,3096) (SPEC(I), I=1,BMSPEC)
- 3096 FORMAT(' '/'  YR',1X,I6,9(2X,I6))
-      WRITE(6,3003)
-      WRITE(6,3004) KLAST
-      WRITE(6,3005)
+ 3096 FORMAT(' '/'  0',',',I4,',',8(2X,I4,','),I4)
+c ann      WRITE(6,3003)
+c ann      WRITE(6,3004) KLAST
+c ann      WRITE(6,3005)
       DO 97 I = 1,NMAX
        WRITE(6,3090) AVG(I,1), (AVGBM(I,III), III=1,BMSPEC)
   97  CONTINUE
-      IF(PLOTS.EQ.1.) GO TO 60
- 3090 FORMAT(F5.0,10F8.0)
-      WRITE(6,3006)
-      WRITE(6,3005)
+ 3090 FORMAT(F5.0,',',F8.3,',',F8.3,',',F8.3,',',F8.3,',',F8.3,',',
+     &F8.3,',',F8.3,',',F8.3,',',F8.3,',',F8.3)
+c ann     WRITE(6,3006)
+c ann     WRITE(6,3005)
       DO 98 I = 1,NMAX
        WRITE(6,3090) AVG(I,1), (CONFBM(I,III), III=1,BMSPEC)
   98  CONTINUE
   60  CONTINUE
- 3000 FORMAT(F5.0,2F8.0,3F8.1,F8.0,F8.0,F8.0,F8.1,F8.0)
+c ann added commas below:
+c 3000 FORMAT(F5.0,',',F8.2,',',F8.2,',',F8.1,',',F8.1,',',F8.1,',',F8.2,',',F8.2,',',F8.2,',',
+c     &F8.2,',',F8.2)
+c3000 FORMAT(F5.0,',',2F8.2,',',3F8.1,',',F8.2,',',F8.2,',',F8.2,',',F8.2,
+c    &',',F8.2)   
+ 3000 FORMAT(F5.0,',',F8.2,',',F9.2,',',F8.1,',',F8.1,',',F8.1,
+     &',',F8.2,',',F8.2,',',F8.2,',',
+     &F8.2,',',F8.2) 
       RETURN
       END
 C
@@ -2042,7 +2114,7 @@ C
 C     TEMPE CALCULATES GROWING SEASON DEGREE DAYS (DEGD) BASED ON
 C     MONTHLY TEMPERATURES NORMALLY DISTRIBUTED AROUND A SPECIFIED
 C     MEAN WITH A SPECIFIED STND DEV. THE TEMPERATURES ARE SUPPLIED
-C     BY SUBROUTINE GGNORD USING RANDOM NUMBER GENERATOR URAND AND
+C     BY SUBROUTINE GGNORD USING RANDOM NUMBER GENERATOR rand AND
 C     ARE LINERALY INTERPOLATED BETWEEN YEARS OF DIFFERENT CLIMATES
 C     BY SUBROUTINE LININT
 C
@@ -2098,19 +2170,15 @@ C.....
       RETURN
       END
 C
-C                 FUNCTION URAND
+C                 FUNCTION rand
 C
 C  DUMMY CALL FOR TRANSITION TO CALLING RANGEN(R) FOR VAX
-C
-       REAL FUNCTION URAND(IY)
-       INTEGER IY
-       REAL R
-       DATA IFRST/1/
-C
-       R = 0.0
-C       IF(IFRST .EQ. 1) R = .1
-       IFRST = 0
-C       URAND = RANGEN(R)
-       URAND = RAN(IY)
-       RETURN
-       END
+
+
+C ann I wonder if this is really working the way it is supposed to be working...
+       
+       real function urand(nseed)
+       urand = rand(nseed)
+       return
+       end
+       
