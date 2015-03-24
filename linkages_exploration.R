@@ -37,22 +37,23 @@ write.table(file="test_text1.txt",rbind(temp_means,temp_sd,precip_means,precip_s
 
 ################ use terminal to compile linkages.f
 
-link = as.matrix(read.csv("/Users/paleolab/Documents/linkagesdocs/data/linkages_v1-0/OUT.csv",head=FALSE))
+link = as.matrix(read.csv("/Users/paleolab/Linkages/OUT.csv",head=FALSE))
 
 hist(link)
 
 if(nrow(link) > 1) print("keep going!")
 
-tree_choices = as.matrix(read.csv("/Users/paleolab/Documents/linkagesdocs/data/linkages_v1-0/tree_choices.csv",header=FALSE))
+tree_choices = load(file="tree_choices.RData")
 
-tree_names = tree_choices[link[50,2:11],1]
+tree_names = c("Acer","Betula","Carya","Castanea dentata","Fagus grandifolia",
+                "Picea","Pinus","Tsuga canadensis","Quercus") #tree_choices[link[50,2:11],1]
 
 par(mfrow=c(1,2))
-test_biomass=link[51:74,]
+test_biomass=link[51:74,1:10]
 colnames(test_biomass) = c("Year",tree_names)
-biomass_cis = link[67:87,]
+biomass_cis = link[67:87,1:10]
 x=seq(0,1150,50)
-plot(x,test_biomass[,2],type="l",lwd=4,main=NA,xlab="Years",ylab="Average Biomass",ylim=c(0,max(test_biomass[,2:11])))
+plot(x,test_biomass[,2],type="l",lwd=4,main=NA,xlab="Years",ylab="Average Biomass",ylim=c(0,max(test_biomass[,2:10])))
 
 lines(x,test_biomass[,3],col="red",lwd=4)
 lines(x,test_biomass[,4],col="yellow",lwd=4)
@@ -62,16 +63,15 @@ lines(x,test_biomass[,7],col="purple",lwd=4)
 lines(x,test_biomass[,8],col="gray",lwd=4)
 lines(x,test_biomass[,9],col="orange",lwd=4)
 lines(x,test_biomass[,10],col="lightblue",lwd=4)
-lines(x,test_biomass[,11],col="pink",lwd=4)
 plot.new()
-legend("center",c(colnames(test_biomass[,2:11])),lwd=rep(4,9),lty=rep(1,9),col=c("black","red","yellow","blue","green","purple","gray","orange","lightblue","pink"),xpd=TRUE)
+legend("center",c(colnames(test_biomass[,2:10])),lwd=rep(4,9),lty=rep(1,9),col=c("black","red","yellow","blue","green","purple","gray","orange","lightblue","pink"),xpd=TRUE)
 
 library(lattice)
 library(stats)
 
-test_other=link[1:21,]
+test_other=link[1:24,]
 colnames(test_other) = c("year","num stems","ag biomass","leaf litter","leaf litter N","ag npp","avail n","humus C:N","soil co2-c","soil OM","aet")
-params_cis = link[22:42,]
+params_cis = link[25:48,]
 biomass_cis = link[66:86,]
 
 par(mfrow=c(3,4))
