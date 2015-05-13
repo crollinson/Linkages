@@ -1,27 +1,68 @@
 rm(list=ls())
 
-setwd("/Users/paleolab/Documents/linkagesdocs/data/linkages_v1-0")
-#setwd("/Users/paleolab/Downloads/raiho")
+model2netcdf.LINKAGES(PFTs = pick_spp, outdir = outdir, sitelat = plat, sitelon = -plong, start_date=NULL, end_date=NULL,force=FALSE)
 
-kprnt = 50 #year interval for output
+site = "PUN"
+
+met2model.LINKAGES(in.path = paste0("/Users/paleolab/Linkages/phase1a_met_drivers_v4.2/",site),
+                   in.prefix = site, 
+                   outfolder = paste0("/Users/paleolab/linkages/UNDERC/old/"), #always need last "/"
+                   start_date = "0850/01/01",
+                   end_date = "2010/12/31", 
+                   overwrite=FALSE,verbose=FALSE)
+
+outdir = paste0("/Users/paleolab/Linkages/UNDERC/old")
+spp_list_site = read.csv("/Users/paleolab/Linkages/phase1a_env_drivers_v4/spp_list_site.csv",stringsAsFactors=FALSE)
+texture =  read.csv("/Users/paleolab/pecan/models/LINKAGES/inst/texture.csv")
+env_drivers = read.csv("/Users/paleolab/Linkages/phase1a_env_drivers_v4/PalEON_Phase1a_sites.csv",stringsAsFactors=FALSE)
+
+pick_site1 = which(colnames(spp_list_site)==site)
+pick_spp = c("hemlock","tamarack","spruce","pine")#spp_list_site[1:9,pick_site1]
+
+kprnt = 2 #year interval for output
 klast = 90 #number of plots
-nyear = 1150 #number of years to simulate
-ipolat_nums = seq(0,nyear,25) #years for climate interpolation
+nyear = 1661 #number of years to simulate 500 spin up + 1160 met data
+ipolat_nums = seq(2,nyear,25) #years for climate interpolation
 ipolat = length(ipolat_nums)-1 #number of years for climate interpolation
-plat = 42.6 #latitude
-plong = 72.4 #longitude
+
+climate_dat = read.csv(paste0("/Users/paleolab/Linkages/met2model_output_v4.2/",site,"/climate.txt"),stringsAsFactors=FALSE)
+if(nrow(climate_dat)!=length(ipolat_nums)*4){
+  print("fix climate data or ipolat_nums")
+}
+
 bgs = 127 #julian day to begin growing season
 egs = 275 #julian day to end growing season
-fc = 18 #field capacity
-dry = 8 #wilting point
-temp_vec = c(c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0),c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0),c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0)) 
-temp_means = matrix(round(rnorm(12*ipolat,temp_vec,0),1),ipolat,12,byrow=TRUE)# monthly mean temperature
-temp_sd = matrix(1,ipolat,12) #monthly temperature standard deviation
-precip_vec = c(rep(3,12),c( 8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9),c( 8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9))#
-precip_means = matrix(round(rnorm(12*ipolat,precip_vec,0),1),ipolat,12,byrow=TRUE) #monthly mean precipitation
-precip_sd = temp_sd #monthly standard deviation precipitation
 
-sink("settings.txt")
+pick_site = which(colnames(env_drivers)==site)
+plat = as.numeric(env_drivers[3,pick_site]) #latitude
+plong = abs(as.numeric(env_drivers[2,pick_site])) #longitude
+
+sand = as.numeric(env_drivers[24,pick_site])/100
+clay = as.numeric(env_drivers[19,pick_site])/100
+
+soil.texture <- function(sand,clay){
+  silt = 1 - sand - clay
+  
+  sand.keep = which(texture$xsand < sand + .1 & texture$xsand > sand - .1) 
+  clay.keep = which(texture$xclay[sand.keep] < clay + .1 & texture$xclay[sand.keep] > clay - .1)
+  silt.keep = which(texture$xsilt[sand.keep[clay.keep]] < silt + .1 & texture$xsilt[sand.keep[clay.keep]] > silt - .1)
+  
+  row.keep = sand.keep[clay.keep[silt.keep]]
+  
+  return(texture[round(mean(row.keep)),c(8,14)]*100) # might need to divide by 3 or something because linkages wants cm water/30cm soil...
+}
+fc = round(as.numeric(unlist(soil.texture(sand = sand, clay = clay)[2])),digits = 2)
+dry = round(as.numeric(unlist(soil.texture(sand = sand, clay = clay)[1])),digits = 2)
+
+
+# temp_vec = c(c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0),c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0),c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0)) 
+# temp_means = matrix(round(rnorm(12*ipolat,temp_vec,0),1),ipolat,12,byrow=TRUE)# monthly mean temperature
+# temp_sd = matrix(1,ipolat,12) #monthly temperature standard deviation
+# precip_vec = c(rep(10,12),c( 8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9),c( 8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9))#
+# precip_means = matrix(round(rnorm(12*ipolat,precip_vec,0),1),ipolat,12,byrow=TRUE) #monthly mean precipitation
+# precip_sd = temp_sd #monthly standard deviation precipitation
+
+sink(paste0(outdir,"/settings.txt"))
 cat(kprnt,klast,nyear,sep=",")
 cat("\n")
 cat(ipolat)
@@ -31,51 +72,16 @@ cat("\n")
 cat(plat,plong,bgs,egs,fc,dry,sep=",")
 sink()
 
-write.table(file="climate.txt",rbind(temp_means,temp_sd,precip_means,precip_sd),sep=",",col.names=FALSE,row.names=FALSE)
+#write.table(file="climate.txt",rbind(temp_means,temp_sd,precip_means,precip_sd),sep=",",col.names=FALSE,row.names=FALSE)
 #file.show("test_text1.txt")
 
-nspec = 9 
-bmspec = 9
-spec_nums = seq(1,bmspec)
-DMAX = c(4700,2500,5993,4571,5537,1911,3165,3800,4571) #- MAXIMUM GROWING DEGREE DAYS
-DMIN = c(1600,1100,1910,1910,1326,280,1100,1324,1100) #- MINIMUM GROWING DEGREE DAYS
-B3 = c(.1988,.5013,.2663,.1495,.2863,.7105,.1495,.1495,.2863) # - INDIVIDUAL SPECIES CONSTANT USED IN GROW
-B2 = c(47.72,76.40,53.26,44.84,57.26,90.96,44.84,44.84,57.26) # - INDIVIDUAL SPECIES CONSTANT USED IN GROW
-ITOL = c(2,1,1,1,1,1,2,1,1) # - LIGHT TOLERANCE CLASS #ITOL = c(2,1,1,1,1,1,2,1,1)
-AGEMX = c(125,250,300,300,366,200,450,650,400) # - MAXIMUM AGE OF SPECIES
-G = c(212,106,82,102,72,132,68,47,66) # - SCALES THE GROWTH RATE OF EACH SPECIESG = c(212,106,82,102,72,132,68,47,66) 
-SPRTND = c(31,43,631,63,172,3,37,0,32) #- TENDENCY TO STUMP SPROUT
-SPRTMN = c(6,12,12,12,6,0,0,0,12) # - MINIMUM SIZE TREE THAT WILL SPROUT
-SPRTMX = c(50,100,200,200,30,0,0,0,40) # - MAXIMUM SIZE TREE THAT WILL SPROUT
-MPLANT = c(20,120,20,20,40,16,140,8,40) # - MAXIMUM NUMBER OF SEEDLINGS TO PLANT #c(20,120,20,20,40,16,140,8,40)
-D3 = c(.268,.2,.3,.3,.2,.309,.31,.18,.225) # - PROPORTION OF GROWING SEASON SPECIES CAN WITHSTAND DROUGHT
-FROST = c(-12,-18,-4,-2,-12,-30,-20,-12,-12) # - MINIMUM JANUARY TEMPERATURE SPECIES CAN WITHSTANDc(-12,-18,-4,-2,-12,-30,-20,-12,-12)
-TL = c(2,4,4,2,8,11,12,6,9) # - LEAF LITTER TYPE
-CM1 = c(2.79,2.94,2.94,2.99,2.94,2.79,2.79,2.79,2.94) #THROUGH CM5 - PARAMETERS TO CALCULATE NITROGEN GROWTH FACTORS
-CM2 = c(219.77,117.52,117.52,207.43,117.52,219.77,200,219.77,117.52) #c(219.77,117.52,117.52,207.43,117.52,219.77,291.77,219.77,117.52)
-CM3 = c(.00179,.00234,.00234,.00175,.00234,.00179,.00179,.00179,.00234)
-CM4 = c(-0.6,-1.2,-1.2,-5.0,-1.2,-0.6,-0.6,-0.6,-1.2)
-CM5 = c(1.0,1.3,1.3,2.9,1.3,1.0,1.0,1.0,1.3)
-FWT = c(440,248,248,440,440,440,440,440,440) #- LEAF WEIGHT/UNIT CROWN AREA
-SLTA = c(.814,.804,.804,.814,.904,.804,.804,.804,.904) #- PARAMETERS TO CALCULATE CROWN AREA
-SLTB = c(.078,.069,.069,.078,.095,.069,.069,.069,.095)
-RTST = c(1,.8,.8,1,1,1,1,1,1) # - ROOT/SHOOT RATIO
-FRT = c(1,1,1,1,1,3,2,3,1) #- FOLIAGE RETENTION TIME IN YEARS
+nspec = 4 
+bmspec = nspec
+all_spp_params = read.csv("spp_matrix.csv")
+spp_params = all_spp_params[which(all_spp_params$Spp_Name%in%pick_spp),3:ncol(all_spp_params)]
+spec_nums = all_spp_params[which(all_spp_params$Spp_Name%in%pick_spp),2]
 
-spp_params = cbind(DMAX,DMIN,B3,B2,ITOL,AGEMX,G,SPRTND,SPRTMN,SPRTMX,MPLANT,D3,FROST,TL,CM1,CM2,CM3,CM4,CM5,FWT,SLTA,SLTB,RTST,FRT)
-spp1 = as.data.frame(spp_params[c(1,2,7),])
-spp2 = as.data.frame(spp_params[c(3,4,5,6,8,9),])
-
-quartz()
-par(mfrow=c(3,3))
-for(i in 1:ncol(spp_params)){
-  plot(spp_params[,i],
-       col=c("black","black","red","red","red","red","black","red","red","red"),
-       pch = 19, cex = 2, main = colnames(spp_params)[i])
- # plot(c(mean(spp1[,i]),mean(spp2[,i])),pch = 19, cex = 2, col = c("black","blue"))
-}
-
-sink("spp.txt")
+sink(paste0(outdir,"/spp.txt"))
 cat(nspec,bmspec,sep=",")
 cat("\n")
 cat(spec_nums)
@@ -83,8 +89,9 @@ cat("\n")
 write.table(spp_params,sep=",",col.names=FALSE,row.names=FALSE)
 sink()
 
-switch_chars = c("FFTFF","FFTTF","TFTFF","TFFFF","FFTFF","FFFFF","TTTFF","FFTTF","TFFFF") #c("FFTFF","FFTTF","TFTFF","TFFFF","FFTFF","FFFFF","TTTFF","FFTTF","TFFFF")
-sink("switch.txt")
+switch_chars_list = c("FFTFF","FFTTF","TFTFF","TFFFF","FFTFF","FFFFF","TTTFF","FFTTF","TFFFF","FFTFF","FTTTT","FTTTF","FFFFF","FFFTF")
+switch_chars = switch_chars_list[spec_nums]
+sink(paste0(outdir,"/switch.txt"))
 cat(switch_chars,sep="\n")
 sink()
 
@@ -119,7 +126,7 @@ dirt_params = cbind(init_litter_wt,init_perc_N,g_N_per_g_wt_loss,crit_perc_N,
 basesc = 74. #starting humus weight
 basesn = 1.640 #starting N content
 
-sink("dirt.txt")
+sink(paste0(outdir,"/dirt.txt"))
 cat(NLVAR,NLT,NCOHRT,sep=" ")
 cat("\n")
 write.table(dirt_params,sep=",",col.names=FALSE,row.names=FALSE)
@@ -127,29 +134,33 @@ cat("\n")
 cat(basesc,basesn,sep=" ")
 sink()
 
+
+
+
+
 ################ use terminal to compile linkages.f
 
 read.csv("climate.txt")
 
-link = as.matrix(read.csv("/Users/paleolab/pecan/OUT.csv",head=FALSE))
+link = as.matrix(read.csv(paste0(outdir,"/OUT.csv"),head=FALSE))
 
-hist(link)
+head(link)
 
-if(nrow(link) > 1) print("keep going!")
+#if(nrow(link) > 1) print("keep going!")
 
-tree_choices = load(file="tree_choices.RData")
+#tree_choices = load(file="tree_choices.RData")
 
-tree_names = c("Acer","Betula","Carya","Castanea dentata","Fagus grandifolia",
-                "Picea","Pinus","Tsuga canadensis","Quercus") #tree_choices[link[50,2:11],1]
+#tree_names = c("Acer","Betula","Carya","Castanea dentata","Fagus grandifolia",
+#                "Picea","Pinus","Tsuga canadensis","Quercus") #tree_choices[link[50,2:11],1]
 
 
-test_biomass=link[51:74,1:10]
+test_biomass=as.matrix(link[1665:(1665+(1661/2)),1:10])
 colnames(test_biomass) = c("Year",tree_names)
 biomass_cis = link[67:87,1:10]
-x=seq(0,1150,50)
+x=seq(0,1660,2)
 quartz()
 par(mfrow=c(1,2))
-plot(x,test_biomass[,2],type="l",lwd=4,main=NA,xlab="Years",ylab="Average Biomass",ylim=c(0,max(test_biomass[,2:10])))
+plot(x,test_biomass[,2],type="l",lwd=4,main=NA,xlab="Years",ylab="Average Biomass",ylim=c(0,max(test_biomass[,2:9])))
 
 lines(x,test_biomass[,3],col="red",lwd=4)
 lines(x,test_biomass[,4],col="yellow",lwd=4)
@@ -160,17 +171,24 @@ lines(x,test_biomass[,8],col="gray",lwd=4)
 lines(x,test_biomass[,9],col="orange",lwd=4)
 lines(x,test_biomass[,10],col="lightblue",lwd=4)
 plot.new()
-legend("center",c("Acer","betula","carya","castanea dentata","fagus grandifolia","picea","pinus",
-                  "tsuga canadensis","quercus"),lwd=rep(4,9),lty=rep(1,9),
+legend("center",as.character(all_spp_params[which(all_spp_params$Spp_Name%in%pick_spp),1]),lwd=rep(4,9),lty=rep(1,9),
        col=c("black","red","yellow","blue","green","purple","gray","orange","lightblue","pink"),xpd=TRUE)
 
 library(lattice)
 library(stats)
 
-test_other=link[1:24,]
+test_other=link[1:((1660/2)+1),]
 colnames(test_other) = c("year","num stems","ag biomass","leaf litter","leaf litter N","ag npp","avail n","humus C:N","soil co2-c","soil OM","aet")
-params_cis = link[25:48,]
-biomass_cis = link[75:98,]
+params_cis = link[1107:(1107+1105),]
+#biomass_cis = link[75:98,]
+
+quartz()
+par(mfrow=c(3,3))
+for(i in 2:10){
+  plot(x,test_other[,i],typ="l",ylim=c(min(test_other[,i]),max(test_other[,i])),main=colnames(test_other)[i],ylab=NA,xlab="Year")
+  #lines(x,test_other[,i]-params_cis[,i],lty=3,col="blue")
+  #lines(x,test_other[,i]+params_cis[,i],lty=3,col="blue")
+}
 
 par(mfrow=c(3,4))
 for(i in 2:10){
@@ -179,13 +197,7 @@ lines(test_biomass[,i]-biomass_cis[,i],lty=3,col="blue")
 lines(test_biomass[,i]+biomass_cis[,i],lty=3,col="blue")
 }
 
-quartz()
-par(mfrow=c(3,3))
-for(i in 2:10){
-plot(x,test_other[,i],typ="l",ylim=c(min(test_other[,i]-params_cis[,i]),max(test_other[,i]+params_cis[,i])),main=colnames(test_other)[i],ylab=NA,xlab="Year")
-lines(x,test_other[,i]-params_cis[,i],lty=3,col="blue")
-lines(x,test_other[,i]+params_cis[,i],lty=3,col="blue")
-}
+
 
 #pairs(test_other)
 
