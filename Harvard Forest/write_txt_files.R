@@ -1,5 +1,10 @@
 rm(list=ls())
 
+working_directory = getwd()
+
+site = "PHA" #don't change
+
+
 #####
 
 ##### FIRST WRITE .txt files for LINKAGES
@@ -7,8 +12,6 @@ rm(list=ls())
 #####
 
 #model2netcdf.LINKAGES(PFTs = pick_spp, outdir = outdir, sitelat = plat, sitelon = -plong, start_date=NULL, end_date=NULL,force=FALSE)
-
-site = "PHA" #don't change
 
 # met2model.LINKAGES(in.path = paste0("/Users/paleolab/Linkages/phase1a_met_drivers_v4.2/",site),
 #                    in.prefix = site, 
@@ -21,10 +24,10 @@ site = "PHA" #don't change
 ##### Set up directories #####
 #####
 
-outdir = paste0("/Users/paleolab/Linkages/Harvard Forest/")
-spp_list_site = read.csv("/Users/paleolab/Linkages/Harvard Forest/spp_list_site.csv",stringsAsFactors=FALSE)
-texture =  read.csv("/Users/paleolab//Linkages/Harvard Forest/texture.csv")
-env_drivers = read.csv("/Users/paleolab/Linkages/Harvard Forest/PalEON_Phase1a_sites.csv",stringsAsFactors=FALSE)
+outdir = paste0(paste0(working_directory,"/Harvard Forest/"))
+spp_list_site = read.csv(paste0(working_directory,"/Harvard Forest/spp_list_site.csv"),stringsAsFactors=FALSE)
+texture =  read.csv(paste0(working_directory,"/Harvard Forest/texture.csv"))
+env_drivers = read.csv(paste0(working_directory,"/Harvard Forest/PalEON_Phase1a_sites.csv"),stringsAsFactors=FALSE)
 
 pick_site1 = which(colnames(spp_list_site)==site)
 
@@ -39,7 +42,7 @@ ipolat_nums = seq(2,nyear,25) #years for climate interpolation
 ipolat = length(ipolat_nums)-1 #number of years for climate interpolation
 
 ###### Read climate data created from MIP drivers #####
-climate_dat = read.csv(paste0("/Users/paleolab/Linkages/Harvard Forest/climate.txt"),stringsAsFactors=FALSE)
+climate_dat = read.csv(paste0(working_directory,"/Harvard Forest/climate.txt"),stringsAsFactors=FALSE)
 
 #####
 ##### Set initial conditions #####
@@ -89,7 +92,7 @@ sink()
 
 nspec = 9 
 bmspec = nspec
-all_spp_params = read.csv("/Users/paleolab/Linkages/Harvard Forest/spp_matrix.csv")
+all_spp_params = read.csv(paste0(working_directory,"/Harvard Forest/spp_matrix.csv"))
 pick_spp = c(1:9)
 spp_params = all_spp_params[which(all_spp_params$Spp_Number%in%pick_spp),3:ncol(all_spp_params)]
 spec_nums = all_spp_params[which(all_spp_params$Spp_Number%in%pick_spp),2]
@@ -106,7 +109,7 @@ sink()
 ##### Write switch text file #####
 #####
 
-switch_chars_list = read.csv("/Users/paleolab/Linkages/Harvard Forest/switch.csv")
+switch_chars_list = read.csv(paste0(working_directory,"/Harvard Forest/switch.csv"))
 switch_chars = as.character(switch_chars_list[spec_nums,3])
 sink(paste0(outdir,"/switch.txt"))
 cat(switch_chars,sep="\n")
