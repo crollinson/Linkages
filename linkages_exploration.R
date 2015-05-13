@@ -1,23 +1,37 @@
 rm(list=ls())
 
-model2netcdf.LINKAGES(PFTs = pick_spp, outdir = outdir, sitelat = plat, sitelon = -plong, start_date=NULL, end_date=NULL,force=FALSE)
 
-site = "PUN"
+#####
 
-met2model.LINKAGES(in.path = paste0("/Users/paleolab/Linkages/phase1a_met_drivers_v4.2/",site),
-                   in.prefix = site, 
-                   outfolder = paste0("/Users/paleolab/linkages/UNDERC/old/"), #always need last "/"
-                   start_date = "0850/01/01",
-                   end_date = "2010/12/31", 
-                   overwrite=FALSE,verbose=FALSE)
+##### FIRST WRITE .txt files for LINKAGES
 
-outdir = paste0("/Users/paleolab/Linkages/UNDERC/old")
-spp_list_site = read.csv("/Users/paleolab/Linkages/phase1a_env_drivers_v4/spp_list_site.csv",stringsAsFactors=FALSE)
-texture =  read.csv("/Users/paleolab/pecan/models/LINKAGES/inst/texture.csv")
-env_drivers = read.csv("/Users/paleolab/Linkages/phase1a_env_drivers_v4/PalEON_Phase1a_sites.csv",stringsAsFactors=FALSE)
+#####
+
+#model2netcdf.LINKAGES(PFTs = pick_spp, outdir = outdir, sitelat = plat, sitelon = -plong, start_date=NULL, end_date=NULL,force=FALSE)
+
+site = "PHA" #don't change
+
+# met2model.LINKAGES(in.path = paste0("/Users/paleolab/Linkages/phase1a_met_drivers_v4.2/",site),
+#                    in.prefix = site, 
+#                    outfolder = paste0("/Users/paleolab/linkages/UNDERC/old/"), #always need last "/"
+#                    start_date = "0850/01/01",
+#                    end_date = "2010/12/31", 
+#                    overwrite=FALSE,verbose=FALSE)
+
+#####
+##### Set up directories #####
+#####
+
+outdir = paste0("/Users/paleolab/Linkages/Harvard Forest/")
+spp_list_site = read.csv("/Users/paleolab/Linkages/Harvard Forest/spp_list_site.csv",stringsAsFactors=FALSE)
+texture =  read.csv("/Users/paleolab//Linkages/Harvard Forest/texture.csv")
+env_drivers = read.csv("/Users/paleolab/Linkages/Harvard Forest/PalEON_Phase1a_sites.csv",stringsAsFactors=FALSE)
 
 pick_site1 = which(colnames(spp_list_site)==site)
-pick_spp = c("hemlock","tamarack","spruce","pine")#spp_list_site[1:9,pick_site1]
+
+#####
+##### Set up printing intervals DONT CHANGE #####
+#####
 
 kprnt = 2 #year interval for output
 klast = 90 #number of plots
@@ -25,13 +39,15 @@ nyear = 1661 #number of years to simulate 500 spin up + 1160 met data
 ipolat_nums = seq(2,nyear,25) #years for climate interpolation
 ipolat = length(ipolat_nums)-1 #number of years for climate interpolation
 
-climate_dat = read.csv(paste0("/Users/paleolab/Linkages/met2model_output_v4.2/",site,"/climate.txt"),stringsAsFactors=FALSE)
-if(nrow(climate_dat)!=length(ipolat_nums)*4){
-  print("fix climate data or ipolat_nums")
-}
+###### Read climate data created from MIP drivers #####
+climate_dat = read.csv(paste0("/Users/paleolab/Linkages/Harvard Forest/climate.txt"),stringsAsFactors=FALSE)
 
-bgs = 127 #julian day to begin growing season
-egs = 275 #julian day to end growing season
+#####
+##### Set initial conditions #####
+#####
+
+bgs = 127 #DOY to begin growing season
+egs = 275 #DOY to end growing season
 
 pick_site = which(colnames(env_drivers)==site)
 plat = as.numeric(env_drivers[3,pick_site]) #latitude
@@ -54,13 +70,9 @@ soil.texture <- function(sand,clay){
 fc = round(as.numeric(unlist(soil.texture(sand = sand, clay = clay)[2])),digits = 2)
 dry = round(as.numeric(unlist(soil.texture(sand = sand, clay = clay)[1])),digits = 2)
 
-
-# temp_vec = c(c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0),c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0),c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0)) 
-# temp_means = matrix(round(rnorm(12*ipolat,temp_vec,0),1),ipolat,12,byrow=TRUE)# monthly mean temperature
-# temp_sd = matrix(1,ipolat,12) #monthly temperature standard deviation
-# precip_vec = c(rep(10,12),c( 8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9),c( 8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9))#
-# precip_means = matrix(round(rnorm(12*ipolat,precip_vec,0),1),ipolat,12,byrow=TRUE) #monthly mean precipitation
-# precip_sd = temp_sd #monthly standard deviation precipitation
+#####
+##### Write initial condition file #####
+#####
 
 sink(paste0(outdir,"/settings.txt"))
 cat(kprnt,klast,nyear,sep=",")
@@ -72,14 +84,16 @@ cat("\n")
 cat(plat,plong,bgs,egs,fc,dry,sep=",")
 sink()
 
-#write.table(file="climate.txt",rbind(temp_means,temp_sd,precip_means,precip_sd),sep=",",col.names=FALSE,row.names=FALSE)
-#file.show("test_text1.txt")
+#####
+##### Write species data table #####
+#####
 
-nspec = 4 
+nspec = 9 
 bmspec = nspec
-all_spp_params = read.csv("spp_matrix.csv")
-spp_params = all_spp_params[which(all_spp_params$Spp_Name%in%pick_spp),3:ncol(all_spp_params)]
-spec_nums = all_spp_params[which(all_spp_params$Spp_Name%in%pick_spp),2]
+all_spp_params = read.csv("/Users/paleolab/Linkages/Harvard Forest/spp_matrix.csv")
+pick_spp = c(1:9)
+spp_params = all_spp_params[which(all_spp_params$Spp_Number%in%pick_spp),3:ncol(all_spp_params)]
+spec_nums = all_spp_params[which(all_spp_params$Spp_Number%in%pick_spp),2]
 
 sink(paste0(outdir,"/spp.txt"))
 cat(nspec,bmspec,sep=",")
@@ -89,11 +103,19 @@ cat("\n")
 write.table(spp_params,sep=",",col.names=FALSE,row.names=FALSE)
 sink()
 
-switch_chars_list = c("FFTFF","FFTTF","TFTFF","TFFFF","FFTFF","FFFFF","TTTFF","FFTTF","TFFFF","FFTFF","FTTTT","FTTTF","FFFFF","FFFTF")
-switch_chars = switch_chars_list[spec_nums]
+#####
+##### Write switch text file #####
+#####
+
+switch_chars_list = read.csv("/Users/paleolab/Linkages/Harvard Forest/switch.csv")
+switch_chars = as.character(switch_chars_list[spec_nums,3])
 sink(paste0(outdir,"/switch.txt"))
 cat(switch_chars,sep="\n")
 sink()
+
+#####
+##### Write underground parameters file #####
+#####
 
 NLVAR = 10
 NLT = 17
@@ -140,8 +162,6 @@ sink()
 
 ################ use terminal to compile linkages.f
 
-read.csv("climate.txt")
-
 link = as.matrix(read.csv(paste0(outdir,"/OUT.csv"),head=FALSE))
 
 head(link)
@@ -160,7 +180,7 @@ biomass_cis = link[67:87,1:10]
 x=seq(0,1660,2)
 quartz()
 par(mfrow=c(1,2))
-plot(x,test_biomass[,2],type="l",lwd=4,main=NA,xlab="Years",ylab="Average Biomass",ylim=c(0,max(test_biomass[,2:9])))
+plot(x,test_biomass[,2],type="l",lwd=4,main=NA,xlab="Years",ylab="Average Biomass",ylim=c(0,max(test_biomass[,2:4])))
 
 lines(x,test_biomass[,3],col="red",lwd=4)
 lines(x,test_biomass[,4],col="yellow",lwd=4)
