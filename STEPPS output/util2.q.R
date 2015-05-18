@@ -460,7 +460,7 @@ if(FALSE){
   pieMap(cMat[,,3],pondLocs)
   
   # surface maps for third time point
-  surfMap(1,rMean[,,3],gridLocs,max=0.6,restrict=TRUE)
+  surfMap(1,rMean[,,7],gridLocs,max=0.6,restrict=TRUE)
   
   par(mfrow=c(3,3),mar=c(2.1,2.1,3.1,1.1)) 
   for(p in 1:(P-1)){
@@ -484,20 +484,22 @@ if(FALSE){
   
   # time series plots of coefficients
   whichts=1:23 # use 300-2500 time interval
+  times = seq(300,3500,length = 24)
   timePlotDecomp(times[whichts],b1sMean[whichts,],b1sLow[whichts,],b1sUp[whichts,],b1s[whichts,,])
   
   # maps of significant differences between two taxa (2nd and 7th here) for 3rd time period
-  taxaSignif(2,7,rIts[,,3,],gridLocs,restrict=TRUE)
+  taxaSignif(3,7,rIts[,,3,],gridLocs,restrict=TRUE)
   
   
   # vegetation + pollen diagam for 300-2500 time interval for cell 139 (Snake Pond I think)
-  dat=read.table('PollenTimeSeries.csv',sep=',',header=T)
+  dat=read.table(paste0("STEPPS output/",'PollenTimeSeries.csv'),sep=',',header=T)
   i=20
   subdat=dat[dat$sitenumber==i,]
   age=-subdat$'cal.age'
   tmp=subdat[,5:14]
   tmp=tmp/apply(tmp,1,sum)
   whichTimeIndices=1:23
+  quartz()
   vegPlusPollenDiagramDecomp(139,whichTimeIndices,seq(300,2500,by=100),age,tmp)
   
   
@@ -506,5 +508,6 @@ if(FALSE){
 # map of significant sychrony between two taxa (pine and oak) between two time periods (the third and fourth time periods)
 
 timeSignifSynch(8,7,rIts[,,3,],rIts[,,4,],gridLocs,restrict=TRUE)
+taxaNames = c("beech","birch","chestnut","hemlock","hickory","maple","oak","pine","spruce","other")
 
 
