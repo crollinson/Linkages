@@ -2,6 +2,8 @@
 
 require('fields')
 
+taxaNames = c("beech","birch","chestnut","hemlock","hickory","maple","oak","pine","spruce","other")
+
 taxaSignif=function(p1,p2,rIts,locs,restrict=FALSE,ylab='',xlab=''){
   # compares significance of differences in composition between two predictions
   # red colors indicate more of the taxon in the older time period; blue in the newer
@@ -502,12 +504,6 @@ if(FALSE){
   quartz()
   vegPlusPollenDiagramDecomp(139,whichTimeIndices,seq(300,2500,by=100),age,tmp)
   
-  
+  # map of significant sychrony between two taxa (pine and oak) between two time periods (the third and fourth time periods)
+  timeSignifSynch(8,7,rIts[,,3,],rIts[,,4,],gridLocs,restrict=TRUE)
 }
-
-# map of significant sychrony between two taxa (pine and oak) between two time periods (the third and fourth time periods)
-
-timeSignifSynch(8,7,rIts[,,3,],rIts[,,4,],gridLocs,restrict=TRUE)
-taxaNames = c("beech","birch","chestnut","hemlock","hickory","maple","oak","pine","spruce","other")
-
-
