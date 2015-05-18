@@ -1,0 +1,46 @@
+From CP 10/10/08
+trees.42-P300-3000x100W.clean.its.RData : R data file with samples from the posterior of the taxa abundances
+objects:
+rIts: array of taxa abundance samples, dimension 256 (grid cells) by 10 (taxa) by 28 (time points) by 2500 (iterations)
+1.4 Gb
+
+trees.42-P300-3000x100W.clean.noIts.RData : R data file with all other summary output except the iterations of the taxa abundances.
+100 Mb
+
+b1s & b2s: arrays of samples of elevation and latitude coefficients, dimension 28 (time points) by 10 (taxa) by 12500 (iterations)
+
+b1sLow & b2sLow: array of lower 2.5% quantile of b1s and b2s by taxon and time point
+
+b1sUp & b2sUp: array of upper 2.5% quantile of b1s and b2s by taxon and time point
+
+b1sMean & b2sMean: array of posterior means of b1s and b2s by taxon and time point
+
+b1sSD & b2sSD: array of posterior standard deviations of b1s and b2s by taxon and time point
+
+cMat: array of pollen counts, dimension 23 (ponds) by 10 (taxa) by 28 (time points); pollen counts are aggregated into 100 year intervals
+
+ct,ri,ma,nh,ny: coordinates of state boundary lines
+
+delta0s,delta1s,delta2s,deltas: posterior samples (12500 of them) of delta parameters in time series of model
+
+rho0s,rho1s,rho2s,rhos: posterior samples (12500 of them) of rho parameters in time series of model
+
+gridLocs: matrix of locations of grid cell centroids; first cell is SW corner, then moving to the east so that 16th cell is SE corner; 17th cell is one north of the SW corner
+
+less: list of 28 elements; each element a list of 10 elements. Each of these elements is the information on the proportion of samples in which a given cell has less of the taxon than another cell; example: less[[5]][[2]][3,72] is the proportion of times that for time point 5, birch (second taxon), the 3rd grid cell has less birch than the 72nd grid cell
+
+nComparisons: total number of comparisons used in calculating 'less' (i.e., the deominator in calculating a proportion using 'less'
+
+pondLocs: coordinates of pond locations
+
+pondMap: grid cell in which each pond lies, based on ordering in gridLocs
+
+rLow: array of lower 2.5% quantiles of taxa abundances, dimension 256 (grid cells) by 10 (taxa) by 28 (time points)
+
+rUp: array of upper 2.5% quantiles of taxa abundances; same dimensions as rLow
+
+rMean: array of posterior means of taxa abundances; same dimensions as rLow
+
+rSD: array of posterio standard deviations of taxa abundances; same dimensions as rLow
+
+taxa: taxa names in order
