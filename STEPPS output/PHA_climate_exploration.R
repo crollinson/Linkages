@@ -13,6 +13,7 @@ for(i in 2:13){
   temp = as.data.frame(temp)
   mod = lm(temp[,i]~temp[,1])
   abline(mod,lwd = 2,lty = 2)
+  abline(v=c(-500,-600),col = "blue", lwd = 2)
   text(-250,max(temp[,i])+5,paste("slope = ",round(mod$coefficients[2],digits = 5),sep = " "))
 }
 
@@ -23,6 +24,7 @@ for(i in 2:13){
   precip = as.data.frame(precip)
   mod = lm(precip[,i]~precip[,1])
   abline(mod,lwd = 2,lty = 2)
+  abline(v=c(-500,-600),col = "blue", lwd = 2)
   text(-250,max(precip[,i])+5,paste("slope = ",round(mod$coefficients[2],digits = 5),sep = " "))
 }
 

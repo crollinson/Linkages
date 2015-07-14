@@ -14,10 +14,9 @@ head(link)
 ##### Look at biomass of different species
 #####
 
-biomass_values=as.matrix(link[1665:2495,1:10])
-colnames(biomass_values) = c("Year",tree_names)
-biomass_cis = link[2496:nrow(link),1:10]
-x=seq(0,1660,2)
+biomass_values=as.matrix(link[505:755,1:10])
+#biomass_cis = link[2496:nrow(link),1:10]
+x=seq(0,500,2)
 quartz()
 par(mfrow=c(1,2))
 plot(x,biomass_values[,2],type="l",lwd=4,main=NA,xlab="Years",ylab="Average Biomass",ylim=c(0,max(biomass_values[,2:nspec])))

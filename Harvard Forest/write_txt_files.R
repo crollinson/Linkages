@@ -37,12 +37,23 @@ pick_site1 = which(colnames(spp_list_site)==site)
 
 kprnt = 2 #year interval for output
 klast = 90 #number of plots
-nyear = 1661 #number of years to simulate 500 spin up + 1160 met data
-ipolat_nums = seq(2,nyear,25) #years for climate interpolation
+nyear = 500 #number of years to simulate 500 spin up + 1160 met data
+ipolat_nums = seq(2,nyear,3) #years for climate interpolation
 ipolat = length(ipolat_nums)-1 #number of years for climate interpolation
 
 ###### Read climate data created from MIP drivers #####
-climate_dat = read.csv(paste0(working_directory,"/Harvard Forest/climate.txt"),stringsAsFactors=FALSE)
+#climate_dat = read.csv(paste0(working_directory,"/Harvard Forest/climate.txt"),stringsAsFactors=FALSE)
+
+temp_vec = c(-6.3,-4.7,-0.3,6.6,12.7,17.7,20.5,19.5,14.7,8.0,2.9,-3.0) 
+temp_means = matrix(round(rnorm(12*ipolat,temp_vec,1),1),ipolat,12,byrow=TRUE)# monthly mean temperature
+temp_sd = matrix(1,ipolat,12) #monthly temperature standard deviation
+precip_vec = c(8.5,7.9,9.9,9.8,9.7,11.1,11.7,9.4,9.4,11.5,10.7,9.9)
+precip_means = matrix(round(rnorm(12*ipolat,precip_vec,1),1),ipolat,12,byrow=TRUE) #monthly mean precipitation
+precip_sd = temp_sd #monthly standard deviation precipitation
+
+write.table(file="Harvard Forest/climate.txt",rbind(temp_means,temp_sd,precip_means,precip_sd),sep=",",col.names=FALSE,row.names=FALSE)
+#file.show("test_text1.txt")
+
 
 #####
 ##### Set initial conditions #####

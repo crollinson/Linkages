@@ -4,10 +4,10 @@ rm(list=ls())
 ##### Create input files for linkages.f #####
 #####
 
-kprnt = 25 #year interval for output
+kprnt = 2 #year interval for output
 klast = 90 #number of plots
-nyear = 500 #number of years to simulate
-ipolat_nums = seq(0,nyear,50) #years for climate interpolation
+nyear = 1160 #number of years to simulate
+ipolat_nums = seq(0,nyear,5) #years for climate interpolation
 ipolat = length(ipolat_nums)-1 #number of years for climate interpolation
 plat = 42.6 #latitude
 plong = 72.4 #longitude
