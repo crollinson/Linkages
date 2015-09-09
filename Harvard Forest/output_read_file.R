@@ -49,9 +49,9 @@ for(i in 2:nspec){
 ##### Look at the ecosystem parameter output #####
 #####
 
-ecosystem_params=link[1:((1660/2)+1),]
+ecosystem_params=link[1:251,]
 colnames(ecosystem_params) = c("year","num stems","ag biomass","leaf litter","leaf litter N","ag npp","avail n","humus C:N","soil co2-c","soil OM","aet")
-params_cis = link[1107:(1107+1105),]
+params_cis = link[252:502,]
 
 quartz()
 par(mfrow=c(3,3))
