@@ -1,0 +1,27 @@
+.Rproj.user
+.Rhistory
+.RData
+*.lyx
+*.lyx~
+*.lyx#
+*.pdf
+*.Rdata
+PalEON_model_survey_2apr2015_LINKAGES.xls
+change_most_stepps.png
+PalEON.Met/
+Harvard Forest/
+
+Linkages.Rproj
+UNDERC/
+jason_linkages_UK.pptx
+like_fake_word.docx
+linkages_model_flow_diagram.jpg
+met2model_output/
+met2model_output_v4.2/
+phase1a_env_drivers_v4.zip
+phase1a_env_drivers_v4/
+phase1a_met_drivers_v4.1/
+phase1a_met_drivers_v4.2.tar.bz2
+phase1a_met_drivers_v4.2/
+spp1.txt
+

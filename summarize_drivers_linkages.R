@@ -1,6 +1,6 @@
 library(ncdf4)
 
-setwd("/Users/paleolab/Downloads/phase1a_met_drivers_v2/PBL/precipf")
+setwd("/Users/paleolab/Downloads/phase1a_met_drivers_v2/PHA/precipf")
 
 year = seq(850,2010,1)
 month = seq(1,12,1)
@@ -8,19 +8,19 @@ month = seq(1,12,1)
 character_hold = matrix(0,length(month),length(year))
 for(y in 1:150){
   for(m in 1:9){
-   character_hold[m,y] <- paste("PBL_precipf_0",year[y],"_0",month[m],sep="")
+   character_hold[m,y] <- paste("PHA_precipf_0",year[y],"_0",month[m],sep="")
   }
   for(m in 10:12){
-   character_hold[m,y] <- paste("PBL_precipf_0",year[y],"_",month[m],sep="")
+   character_hold[m,y] <- paste("PHA_precipf_0",year[y],"_",month[m],sep="")
   }
 }
 
 for(y in 151:length(year)){
   for(m in 1:9){
-    character_hold[m,y] <- paste("PBL_precipf_",year[y],"_0",month[m],sep="")
+    character_hold[m,y] <- paste("PHA_precipf_",year[y],"_0",month[m],sep="")
   }
   for(m in 10:12){
-    character_hold[m,y] <- paste("PBL_precipf_",year[y],"_",month[m],sep="")
+    character_hold[m,y] <- paste("PHA_precipf_",year[y],"_",month[m],sep="")
   }
 }
 

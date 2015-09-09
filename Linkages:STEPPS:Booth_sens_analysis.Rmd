@@ -1,0 +1,65 @@
+---
+title: "Linkages/STEPPS Data Sensitivity Analysis"
+author: "Raiho"
+date: "August 10, 2015"
+output: pdf_document
+---
+
+This is a working document for sensitivity analysis of the STEPPS Data compared to Booth's reconstruction water table depth (WTD) and the LINKAGES output compared with the MIP precipitation driver.
+
+---
+Hemlock's sensitivity to Booth's WTD
+---
+
+Load "mgcv" package, STEPPS output, and WTD data. 
+
+```{r}
+library(mgcv)
+load("/Users/paleolab/Linkages/STEPPS Output/LOAD WORKSPACE Sun night Boston Dec 7.RData") ## STEPPS Output
+sid_wtd_dat = read.csv("~/Downloads/Sid_WTD.csv")
+sid_wtd = as.data.frame(cbind(sid_wtd_dat$age_best,sid_wtd_dat$WTD)) ## Keeping only two relevent columns
+colnames(sid_wtd) <- c("age","wtd")
+```
+
+Use GAM to smooth time-series relationship between Booth's reconstructed WTD and Age of the sample. Notice the dry period between 1250 and 2000 years before present.
+
+```{r}
+age_wtd_mod = gam(wtd ~ s(age,k=10), data = sid_wtd)
+time_seq = seq(100,2800,100)
+## Predict the smooth relationship
+pred_age_wtd = predict(age_wtd_mod,newdata=data.frame(age=time_seq),type="response")
+## Plot of smooth relationship with data overlayed (blue dots)
+plot(time_seq,pred_age_wtd,ylim=c(0,40),typ="l",lwd=4, xlab = "Age Before Present",ylab="WTD")
+points(sid_wtd[,1],sid_wtd[,2],pch=19,cex=.5,col="blue")
+```
+
+Next, looking at Petersham STEPPS grid cell #137 because this is the closest to where Booth did the WTD reconstruction. Hemlock increased in this grid cell until 1500 years before present then decreased until present. Hemlock appears to be negatively correlated with WTD, but there may be a lagged response from hemlock to drought.
+
+```{r}
+plot(rMean[137,4,],ylab="Percent Hemlock",xlab="Time Before Present x100",pch=19,main ="Percent Hemlock through Time")
+plot(rMean[137,4,2:28] - rMean[137,4,1:27],main="Change in Hemlock between 100 years",xlab ="Time Before Present x100",ylab="Change",pch=19)
+abline(h=0)
+plot(sid_wtd[,1],sid_wtd[,2],pch=19,ylab="WTD",xlab="Time Before Present",main="WTD through Time")
+plot(sid_wtd[2:nrow(sid_wtd),2] - sid_wtd[1:(nrow(sid_wtd)-1),2],main="Change in WTD all points",xlab ="Time Before Present x100",ylab="Change",pch=19)
+abline(h=0)
+plot(pred_age_wtd[2:28] - pred_age_wtd[1:27],main="Change in WTD smoothed 100 year",xlab ="Time Before Present x100",ylab="Change",pch=19)
+abline(h=0)
+plot(pred_age_wtd,rMean[137,4,],pch=19,xlab="WTD",ylab="Percent Hemlock",main="Percent Hemlock versus Booth's WTD")
+```
+
+These plots show the sensitivity analysis of hemlocks response to changing water table depth smoothed at 100 year time intervals. The fit is not that good, but we do generally see a decrease in hemlock given a decrease in WTD. Maybe we need to think about how to account for a lagged response? Maybe we should look at other species?
+
+```{r}
+wtd_change = pred_age_wtd[2:28] - pred_age_wtd[1:27]
+hem_change = rMean[137,4,2:28] - rMean[137,4,1:27]
+
+plot(wtd_change, hem_change, pch=19,
+     ylab="Change in Percent Hemlock", xlab = "Change in WTD",
+     xlim=c(-4,4),ylim=c(-.04,.04))
+
+plot(gam(hem_change ~ s(wtd_change,k=8)),
+     ylab="Change in Percent Hemlock", xlab = "Change in WTD")
+points(pred_age_wtd[2:28] - pred_age_wtd[1:27],
+       rMean[137,4,2:28] - rMean[137,4,1:27],pch=19)
+```
+
