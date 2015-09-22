@@ -1,4 +1,4 @@
-decomp <- function(fdat,aet,ncohrt,fc,dry){
+decomp <- function(fdat,aet,ncohrt,fc,dry,tyl){
   
   #Initialization
   
@@ -50,7 +50,7 @@ decomp <- function(fdat,aet,ncohrt,fc,dry){
   if(ncohrt!=1){
     for(i in 2:ncohrt){
       pwtlos = (.9804+.09352*aet)-((-.4956+.00193*aet)*(C.mat[i,7]/C.mat[i,11]))
-      pwtlos(decmlt*pwtlos)/100
+      pwtlos = (decmlt*pwtlos)/100
       if(pwtlos>.99) pwtlos = .99
       
       lt = C.mat[i,5]
@@ -100,6 +100,7 @@ decomp <- function(fdat,aet,ncohrt,fc,dry){
   C.mat[1,2] = hnnew
   hcn = (.48*C.mat[1,1])/C.mat[1,2]
   tnmin = fnmin - tnimob
+  availn <<- tnmin - tnimob
   sco2 = fco2+hco2
   
   ix = 0
