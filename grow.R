@@ -1,13 +1,13 @@
-grow <- function(nspec,ntrees,frt,slta,sltb,dbh,fwt, b2,b3, itol,g, degdgf,smgf,sngf){
+grow <- function(max.ind,nspec,ntrees,frt,slta,sltb,dbh,fwt, b2,b3, itol,g, degdgf,smgf,sngf,frost,rt){
   #initialize wood production
-  awp = matrix(0,1,1500)
+  awp = matrix(0,1,max.ind)
   #calculate total number of trees
   ntot = 0
   for(i in 1:nspec) ntot = ntot + ntrees[i]
   if(ntot == 0) break
-  if(ntot > 1500) print("too many trees")
+  if(ntot > max.ind) print("too many trees")
   #initialize canopy leaf biomass profile
-  sumla = matrix(0,1,1500)
+  sumla = matrix(0,1,max.ind)
   #loop for calculating canopy profile
   nl = 1
   for(j in 1:nspec){
@@ -72,5 +72,5 @@ grow <- function(nspec,ntrees,frt,slta,sltb,dbh,fwt, b2,b3, itol,g, degdgf,smgf,
     }
     nl = nl + ntrees[i]
   }
-  
+  return(list(ntrees = ntrees, dbh = dbh))
 }

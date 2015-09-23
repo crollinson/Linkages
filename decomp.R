@@ -1,4 +1,4 @@
-decomp <- function(fdat,aet,ncohrt,fc,dry,tyl){
+decomp <- function(fdat,aet,ncohrt,fc,dry,tyl,C.mat){
   
   #Initialization
   
@@ -100,7 +100,7 @@ decomp <- function(fdat,aet,ncohrt,fc,dry,tyl){
   C.mat[1,2] = hnnew
   hcn = (.48*C.mat[1,1])/C.mat[1,2]
   tnmin = fnmin - tnimob
-  availn <<- tnmin - tnimob
+  availn = tnmin - tnimob
   sco2 = fco2+hco2
   
   ix = 0
@@ -141,6 +141,8 @@ decomp <- function(fdat,aet,ncohrt,fc,dry,tyl){
   
   ff[19,2] = ff[19,2] + ff[18,2] + ff[13,2]
   ff[19,3] = ff[19,3] + ff[18,3] + ff[13,3]
+  
+  return(list(ff=ff,availn=availn))
 }
 
 

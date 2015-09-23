@@ -1,46 +1,102 @@
 rm(list = ls())
-linkages <- function(){
+linkages <- function(klast,nyear){
   
   iplot = 0 #starting the counter for number of plots
-  klast = 1 #number of plots
+  klast = klast #number of plots
   
-  input(nyear = 2) #add tables with species parameter values and initial conditions and temperature and precip means
+  source("input.R")
+  input(nyear = nyear) #add tables with species parameter values and initial conditions and temperature and precip means
   
+  source("plotin.R")
+  source("tempe.R")
+  source("moist.R")
+  source("decomp.R")
+  source("gmult.R")
+  source("birth.R")
+  source("grow.R")
+  source("kill.R")
+
   for(k in 1:klast){ #loop over plots
-    plotin(iplot = 1, basesc = 74, basesn = 1.64, max.ind = 1500) # initializes storage matrices with zeros for each plot
+    
+    iplot <- iplot + 1 #counter for plots
+    plotin.out <- plotin(iplot = iplot, basesc = 74, basesn = 1.64, max.ind = 1500) # initializes storage matrices with zeros for each plot
+    
     kyr = 0 #current year is zero
+    ncohrt <- unlist(plotin.out$ncohrt)
+    tyl <- unlist(plotin.out$tyl)
+    C.mat <- unlist(plotin.out$C.mat)
+    ntrees <- unlist(plotin.out$ntrees)
+    dbh <- unlist(plotin.out$dbh)
+    nogro <- unlist(plotin.out$nogro)
+    ksprt <- unlist(plotin.out$ksprt)
+    iage <- unlist(plotin.out$iage)
+    
     
     for(i in 1:nyear){
       kyr = i
-      tempe(temp.vec = temp.mat[i,]) #calculates degree days for the year
       
-      moist(kyr = kyr, temp.vec = temp.mat[i,], precip.vec = precip.mat[i,],
+      tempe.out <- tempe(temp.vec = temp.mat[i,]) #calculates degree days for the year
+      
+      degd = unlist(tempe.out$degd)
+      
+      moist.out <- moist(kyr = kyr, temp.vec = temp.mat[i,], precip.vec = precip.mat[i,],
             fc = 28, dry = 14, bgs = 127, egs = 275, plat = 45, clat = clat) #calculates aet
       
-      decomp(fdat = fdat, aet = aet, ncohrt = ncohrt, fc = 28, dry = 14,tyl = rep(2,20))
+      aet <- unlist(moist.out$aet) ###### START HERE ###### AET TOO SMALL
+      fj <- unlist(moist.out$fj)
       
-      gmult(bgs = 127, egs = 275, availn = availn, degd = 2000, dmin = spp.params$DMIN,
-            dmax = spp.params$DMAX, d3 = spp.params$D3, fj = fj, cm1 = spp.params$CM1,
-            cm3 = spp.params$CM3, cm2 = spp.params$CM2, cm4 = spp.params$CM4,
-            cm5 = spp.params$CM5, nspec = 12)
+      decomp.out <- decomp(fdat = fdat, aet = aet,
+                           ncohrt = ncohrt, fc = 28, dry = 14,
+                           tyl = tyl, C.mat = C.mat)
       
-      birth(nspec = 12, ntrees = ntrees, frt = spp.params$FRT, iage = iage, 
+      ff <- unlist(decomp.out$ff)
+      availn <- unlist(decomp.out$availn)
+      
+      gmult.out <- gmult(bgs = 127, egs = 275, availn = availn,
+                        degd = degd, dmin = spp.params$DMIN,
+                        dmax = spp.params$DMAX, d3 = spp.params$D3, fj = fj,
+                        cm1 = spp.params$CM1, cm3 = spp.params$CM3, cm2 = spp.params$CM2,
+                        cm4 = spp.params$CM4, cm5 = spp.params$CM5, nspec = 12)
+      
+      smgf <- unlist(gmult.out$smgf)
+      sngf <- unlist(gmult.out$sngf)
+      degdgf <- unlist(gmult.out$degdgf)
+      
+     birth.out <- birth(nspec = 12, ntrees = ntrees, frt = spp.params$FRT, iage = iage, 
             slta = spp.params$SLTA, sltb = spp.params$SLTB, dbh = dbh,
-            fwt = spp.params$FWT, switch.mat = matrix(TRUE,12,5),
+            fwt = spp.params$FWT, switch.mat = matrix(TRUE,72,5),
             degd = degd, dmin = spp.params$DMIN, dmax = spp.params$DMAX,
-            frost = spp.params$FROST, rt = temp.vec[i,], itol = spp.params$ITOL,
+            frost = spp.params$FROST, rt = temp.mat[i,], itol = spp.params$ITOL,
             mplant = spp.params$MPLANT, nogro = nogro,
-            ksprt = ksprt)
+            ksprt = ksprt, sprtnd = spp.params$SPRTND)
+     
+     ntrees <- unlist(birth.out$ntrees)
+     dbh <- unlist(birth.out$dbh)
+     nogro <- unlist(birth.out$nogro)
+     ksprt <- unlist(birth.out$ksprt)
+     iage <- unlist(birth.out$iage)
       
-      grow(nspec = 12, ntrees = seq(1,100,1),frt = rep(2,12), slta = rep(.5,12),
-           sltb = rep(.3,12), dbh = rep(1,1500), fwt = rep(10,12), b2 = rep(10,12),
-           b3 = rep(10,12), itol =rep(2,12), g = rep(1.2,12), degdgf = rep(120,12),
-           smgf = rep(.2,12), sngf= rep(.2,12))
+     grow.out <- grow(max.ind = 1500, nspec = 12, ntrees = ntrees, frt = spp.params$FRT, slta = spp.params$SLTA,
+           sltb = spp.params$SLTB, dbh = dbh, fwt = spp.params$FWT, b2 = spp.params$B2,
+           b3 = spp.params$B3, itol =spp.params$ITOL, g = spp.params$G, degdgf = degdgf,
+           smgf = smgf, sngf= sngf,frost = spp.params$FROST, rt = temp.mat[i,])
+     
+     ntrees <- unlist(grow.out$ntrees)
+     dbh <- unlist(grow.out$dbh)
       
-      kill(ntrees= seq(1,100,1),slta = rep(.5,12), sltb = rep(.3,12),
-           dbh = rep(1,1500), agemx = rep(100,12),ksprt = seq(1,100,1),
-           sprtmn = rep(5,12), sprtmx = rep(5,12), iage  = rep(1,1500),
-           nogro  = rep(1,1500),tl = rep(3,12),rtst = rep(9,12))
+    kill.out<- kill(nspec = 12, ntrees= ntrees,slta = spp.params$SLTA, sltb = spp.params$SLTB,
+           dbh = dbh, agemx = spp.params$AGEMX, ksprt = ksprt,
+           sprtmn = spp.params$SPRTMN, sprtmx = spp.params$SPRTMX, iage  = iage,
+           nogro  = nogro,tl = spp.params$TL,rtst = spp.params$RTST, fwt = spp.params$FWT)
+   
+    ntrees <- unlist(kill.out$ntrees)
+    dbh <- unlist(kill.out$dbh)
+    nogro <- unlist(kill.out$nogro)
+    ksprt <- unlist(kill.out$ksprt)
+    iage <- unlist(kill.out$iage)
+    ncohrt <- unlist(kill.out$ncohrt)
+    tyl <- unlist(kill.out$tyl)
+    
     }
     
   }

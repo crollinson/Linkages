@@ -1,4 +1,4 @@
-kill <- function(ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,nogro,tl,rtst){
+kill <- function(nspec, ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,nogro,tl,rtst,fwt){
   knt = 0 
   #initialize litter
   tyl = matrix(0,1,20)
@@ -84,6 +84,6 @@ kill <- function(ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,nogro,tl,rt
     nogro[i] = 0
   }
   
-  
+  return(list(ntrees = ntrees, dbh = dbh, iage = iage, nogro = nogro, ncohrt = ncohrt, tyl = tyl, ksprt = ksprt))
   
 }

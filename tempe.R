@@ -5,6 +5,7 @@ tempe <- function(temp.vec){
   #sum degree days for consecutive months
   for(i in 1:12){
     if(temp.vec[i] < ddbase) next
-    degd <<- degd + (temp.vec[i] - ddbase) * days[i]
+    degd <- degd + (temp.vec[i] - ddbase) * days[i]
   }
+  return(list(degd=degd))
 }
