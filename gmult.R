@@ -24,6 +24,6 @@ gmult <- function(egs,bgs,availn,degd,dmin,dmax,d3,fj,cm1,cm3,cm2,cm4,cm5,nspec)
     } 
   }
 
-  return(list(smgf=smgf,sngf=sngf,degdgf=degdgf))
+  return(list(smgf=smgf,sngf=sngf,degdgf=degdgf,availn=availn))
   
 }

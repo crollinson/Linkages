@@ -148,6 +148,6 @@ birth <- function(nspec,ntrees,frt,iage,slta,sltb,dbh,fwt,switch.mat,
   for(i in 1:nspec){
     ksprt[i] = 0
   }
-  return(list(iage=iage, dbh=dbh, nogro=nogro, ntrees=ntrees, newtr = newtr))
+  return(list(iage=iage, dbh=dbh, nogro=nogro, ntrees=ntrees, newtr = newtr,ksprt=ksprt))
 }
 

@@ -15,9 +15,9 @@ moist <- function(kyr,temp.vec,precip.vec,fc,dry,bgs,egs,plat,clat){
   
   for(k in 1:12){
     if(temp.vec[k]<0) temp.vec[k] = 0
-    te = te + (.2 * temp.vec[k]) * 1.514
+    te = te + (.2 * temp.vec[k]) * 1.514 #te = temperature efficiency
   }
-  a = .675 * te * 3 - 77.1 * te * 2 + 17920 * te + 492390
+  a = .675 * te * 3 - 77.1 * te * 2 + 17920 * te + 492390 #a = exponent of evapotranspiration function
   a = .000001 * a
   
   #initializ the number of dry days (dd), and current day of year (cday)
@@ -35,28 +35,36 @@ moist <- function(kyr,temp.vec,precip.vec,fc,dry,bgs,egs,plat,clat){
     #calculate this month's rainfall
     rain = precip.vec[k]
     ttmp = temp.vec[k]
-    #calculate potential evapotranspiration (U)
+    #calculate potential evapotranspiration (u)
     u = 1.6 * ((10*ttmp/te)^a)*clat[lat,k]
     #calculate potential water loss this month
     pwl = rain - u
-    if(pwl < 0){
-      accpwl = accpwl +pwl
+    if(pwl < 0){ #if rain satisfies u thes month, don't draw on soil water
+      #if rain doesn't satisfy u, add this month's potential water loss to accumulated potential water loss from soil
+      accpwl = accpwl + pwl
       xacpwl = accpwl * 10
+      #calculate water retained in soil given so much accumulated potential water loss (pastor and post 1984 Candian Journal for Forest Restoration 14:466-467)
       water = fc*(exp((.000461-1.10559/xfc)*(-1*xacpwl)))
       if(water<0) water = 0
+      #CSM - change in soil moisture during this  mont
       csm = water - owater
-      aet = aet + (rain-csm)
+      #calculate actual evapotranspiration (aet) if soil water is drawn down this month
+      aet = aet + (rain - csm)
     } else {
       if(water>=fc) water = fc
       csm = water-owater
+      #if soil is partially rechared, reduce accumulated potential water loss accordingly
       accpwl = accpwl +csm
+      #if soil is completely recharged, reset accumulated potential water loss to zero
       if(water>=fc) accpwl = 0
+      #if soil water is not drawn upon, add u to aet
       aet = aet + u
     }
     ocday = cday
     cday = cday + days[k]
     ddi = 0
     
+    #increment the number of dry days interpolating if necessary, truncate at ends of growing season
     if(cday <= bgs) next
     if(ocday >= egs) next
     if(owater >= dry & water >= dry) next
@@ -74,8 +82,10 @@ moist <- function(kyr,temp.vec,precip.vec,fc,dry,bgs,egs,plat,clat){
       if(ocday<egs & cday >egs) ddi = mis(ddi, (egs-ocday))
       dd = dd + ddi
     }
-    fj <<- dd
+    #save total number of dry days for year
+    fj <- dd
     temp.vec[1] = rsave
+    #conver aet from cm to mm
     aet <<- aet * 10
   }
   return(list(aet=aet,fj=fj))
