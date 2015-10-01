@@ -1,3 +1,5 @@
+##' @title LINKAGES decomp function
+##' @author Ann Raiho
 decomp <- function(fdat,aet,ncohrt,fc,dry,tyl,C.mat){
   
   #Initialization
@@ -26,7 +28,7 @@ decomp <- function(fdat,aet,ncohrt,fc,dry,tyl,C.mat){
   
   #Create new cohorts
   for(i in 1:16){
-    if(tyl[i]!=0){
+    if(tyl[i]==0) next
       ncohrt = ncohrt + 1
       if(ncohrt>100) print("ncohrt error")
       C.mat[ncohrt,1] = tyl[i] * fdat[i,10]
@@ -40,7 +42,6 @@ decomp <- function(fdat,aet,ncohrt,fc,dry,tyl,C.mat){
       if(C.mat[ncohrt,5]==14) C.mat[ncohrt,12]=.3
       if(C.mat[ncohrt,5]==15) C.mat[ncohrt,12]=.3
       if(C.mat[ncohrt,5]==16) C.mat[ncohrt,12]=.3
-    }
   }
   
   #calculate decay multiplier, simulating effect of gaps on decay
@@ -119,18 +120,16 @@ decomp <- function(fdat,aet,ncohrt,fc,dry,tyl,C.mat){
   #remove transferred cohorts
   ix = 0
   for(i in 1:ncohrt){
-    if(C.mat[i,1]!=0){
+    if(C.mat[i,1]==0) ix = ix + 1
       for(j in 1:12){
         C.mat[(i-ix),j] = C.mat[i,j]
       }
-    }
-    ix = ix + 1
   }
   ncohrt = ncohrt - ix
   #create new well decayed wood cohort
   if(ffw != 0 ){
     ncohrt = ncohrt + 1
-    if(ncohrt>1500) print("too many ncohrt")
+    if(ncohrt>100) print("too many ncohrt")
     C.mat[ncohrt,1] = ffw
     C.mat[ncohrt,2] = ffw * fdat[17,2]
     for(j in 3:9){
@@ -156,7 +155,7 @@ decomp <- function(fdat,aet,ncohrt,fc,dry,tyl,C.mat){
   ff[19,2] = ff[19,2] + ff[18,2] + ff[13,2]
   ff[19,3] = ff[19,3] + ff[18,3] + ff[13,3]
   
-  return(list(ff=ff,availn=availn,tyln = tyln,hcn=hcn,sco2=sco2))
+  return(list(ff=ff, availn=availn, tyln = tyln, hcn=hcn, sco2=sco2, ncohrt=ncohrt, C.mat=C.mat))
 }
 
 

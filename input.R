@@ -1,3 +1,5 @@
+##' @title LINKAGES input function
+##' @author Ann Raiho
 input <- function(nyear){
   fdat <<- read.csv("fdat.csv") #litter quality parameters
   spp.params <<- read.csv("spp_matrix.csv") #species parameter matrix

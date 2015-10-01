@@ -1,4 +1,7 @@
-kill <- function(nspec, ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,nogro,tl,rtst,fwt){
+##' @title LINKAGES kill function
+##' @author Ann Raiho
+kill <- function(nspec, ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,
+                 nogro,tl,rtst,fwt,max.ind,frt,ncohrt){
   knt = 0 
   #initialize litter
   tyl = matrix(0,1,20)
@@ -15,7 +18,7 @@ kill <- function(nspec, ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,nogr
       #calculate basal area
       ba = ba + .0314 * (dbh[k]*.5) ^ 2
       #kill trees based on probability that only 1% reach max age
-      yfl = runif(1,1,10)
+      yfl = runif(1,0,1)
       if(yfl <= (4.605/agemx[i])) {
         ntrees[i] = ntrees[i] - 1
         #check to see if dead tree can sump sprout increment skprt if tree can sprout
@@ -28,8 +31,8 @@ kill <- function(nspec, ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,nogr
         dbh[k] = -1
       } else {
         if(nogro[k]<=-2){
-          yfl = runif(1,1,10)
-          if(yfl<= .368){
+          yfl = runif(1,0,1)
+          if(yfl <= .368){
             ntrees[i] = ntrees[i] - 1
             #check to see if dead tree can sump sprout increment skprt if tree can sprout
             if(dbh[k]>sprtmn[i] & dbh[k]<sprtmx[i]) ksprt[i] = ksprt[i] + 1
@@ -43,7 +46,7 @@ kill <- function(nspec, ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,nogr
         }
       }
       #calculate leaf litter by quality class in t/ha if the tree is slow growing but didn't di, leaf litter is halved
-      #if the ree died, total leaf biomass is returned to the soil
+      #if the tree died, total leaf biomass is returned to the soil
       L = tl[i]
       if(nogro[k] == -2 & dbh[k] > -1) folw = folw*.5
       if(dbh[k] < 0) folw = folw * frt[i]
@@ -63,7 +66,7 @@ kill <- function(nspec, ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,nogr
   tyl[18] = sum(tyl[13:17])
   #rewrite diameters and ages to eliminate dead trees
   k = 0
-  for(i in 1:1500){
+  for(i in 1:max.ind){
     if(dbh[i]!=0){
       if(dbh[i]>=0){
         k = k+1
@@ -76,7 +79,7 @@ kill <- function(nspec, ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,nogr
   ntot = k
   if(ntot==0) next
   ntot1 = k+1
-  if(ntot1>1500) print("too many trees")
+  if(ntot1 > max.ind) print("too many trees -- kill")
   #eliminate dead trees
   for(i in ntot1:nu){
     dbh[i] = 0

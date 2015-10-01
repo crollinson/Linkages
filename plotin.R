@@ -1,6 +1,8 @@
-plotin <- function(iplot,basesc,basesn,max.ind){
+##' @title LINKAGES plotin function
+##' @author Ann Raiho
+plotin <- function(iplot,basesc,basesn,max.ind,nspec){
   
-  ntrees <- matrix(0,1,max.ind) #contains number of trees for each species
+  ntrees <- matrix(0,1,nspec) #contains number of trees for each species
   dbh <- matrix(0,1,max.ind) #contains diameter at breast height for each tree
   nogro <- matrix(0,1,max.ind) #used to flag slow growing trees
   ksprt <- matrix(0,1,max.ind) #used to flag trees eligible to sprout

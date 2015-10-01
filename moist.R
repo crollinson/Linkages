@@ -1,3 +1,5 @@
+##' @title LINKAGES moist function
+##' @author Ann Raiho
 moist <- function(kyr,temp.vec,precip.vec,fc,dry,bgs,egs,plat,clat){
   # adjust latitude pointer
   days = c(31.,28.,31.,30.,31.,30.,31.,31.,30.,31.,30.,31.)

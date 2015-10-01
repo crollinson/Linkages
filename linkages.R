@@ -1,18 +1,7 @@
-rm(list = ls())
-linkages <- function(klast = 1,nyear = 2){
-  
-  klast = 5
-  nyear = 5
-  
-  iplot = 0 #starting the counter for number of plots
-  klast = klast #number of plots
-  nspec = 12
-  fc = 28
-  dry = 14
-  bgs = 127
-  egs = 256
-  max.ind = 1500
-  plat = 45
+##' @title LINKAGES main function
+##' @author Ann Raiho
+
+linkages <- function(iplot, nyear,nspec, fc, dry, bgs, egs, max.ind, plat){
   
   source("input.R")
   input(nyear = nyear) #add tables with species parameter values and initial conditions and temperature and precip means
@@ -29,22 +18,29 @@ linkages <- function(klast = 1,nyear = 2){
   
   #Storage
   
-  tstem = matrix(0,nyear,klast) #number of stems
-  tab = matrix(0,nyear,klast) #total aboveground biomass
-  fl = matrix(0,nyear,klast) #leaf litter
-  totl = matrix(0,nyear,klast) #leaf litter N
-  tnap = matrix(0,nyear,klast) #net aboveground production
-  avln = matrix(0,nyear,klast) #available nitrogen
-  cn = matrix(0,nyear,klast) #humus C:N ratio
-  sco2c = matrix(0,nyear,klast) #soil co2 evolution
-  som = matrix(0,nyear,klast) #soil organic matter
+  tstem = matrix(0,nyear,iplot) #number of stems
+  tab = matrix(0,nyear,iplot) #total aboveground biomass
+  fl = matrix(0,nyear,iplot) #leaf litter
+  totl = matrix(0,nyear,iplot) #leaf litter N
+  tnap = matrix(0,nyear,iplot) #net aboveground production
+  avln = matrix(0,nyear,iplot) #available nitrogen
+  cn = matrix(0,nyear,iplot) #humus C:N ratio
+  sco2c = matrix(0,nyear,iplot) #soil co2 evolution
+  som = matrix(0,nyear,iplot) #soil organic matter
+  aet.save = matrix(0,nyear,iplot) 
+  ncohrt.save = matrix(0,nyear,iplot)
+  tyl.save = array(0,dim=c(20,nyear,iplot))
+  ntrees.birth <- array(0,dim=c(nspec,nyear,iplot))
+  ntrees.grow <- array(0,dim=c(nspec,nyear,iplot))
+  ntrees.kill <- array(0,dim=c(nspec,nyear,iplot))
+  bar <- array(0,dim=c(nspec,nyear,iplot))
+  nogro.save <- array(0,dim=c(max.ind,nyear,iplot))
 
-  for(k in 1:klast){ #loop over plots
+  for(k in 1:iplot){ #loop over plots
     
-    iplot <- iplot + 1 #counter for plots
-    plotin.out <- plotin(iplot = iplot, basesc = 74, basesn = 1.64, max.ind = max.ind) # initializes storage matrices with zeros for each plot
-    
-    kyr = 0 #current year is zero
+    plotin.out <- plotin(iplot = k, basesc = 74, basesn = 1.64, max.ind = max.ind,
+                         nspec = nspec) # initializes storage matrices with zeros for each plot
+
     ncohrt <- unlist(plotin.out$ncohrt)
     tyl <- unlist(plotin.out$tyl)
     C.mat <- unlist(plotin.out$C.mat)
@@ -54,18 +50,16 @@ linkages <- function(klast = 1,nyear = 2){
     ksprt <- unlist(plotin.out$ksprt)
     iage <- unlist(plotin.out$iage)
     
-    
     for(i in 1:nyear){
-      kyr = i
       
       tempe.out <- tempe(temp.vec = temp.mat[i,]) #calculates degree days for the year
       
       degd = unlist(tempe.out$degd)
       
-      moist.out <- moist(kyr = kyr, temp.vec = temp.mat[i,], precip.vec = precip.mat[i,],
+      moist.out <- moist(kyr = i, temp.vec = temp.mat[i,], precip.vec = precip.mat[i,],
             fc = fc, dry = dry, bgs = bgs, egs = egs, plat = plat, clat = clat) #calculates aet
       
-      aet <- unlist(moist.out$aet) ###### START HERE ###### AET TOO SMALL
+      aet <- unlist(moist.out$aet)
       fj <- unlist(moist.out$fj)
       
       decomp.out <- decomp(fdat = fdat, aet = aet,
@@ -77,6 +71,8 @@ linkages <- function(klast = 1,nyear = 2){
       tyln <- unlist(decomp.out$tyln)
       hcn <- unlist(decomp.out$hcn)
       sco2 <- unlist(decomp.out$sco2)
+      ncohrt <- unlist(decomp.out$ncohrt)
+      C.mat <- unlist(decomp.out$C.mat)
       
       gmult.out <- gmult(bgs = bgs, egs = egs, availn = availn,
                         degd = degd, dmin = spp.params$DMIN,
@@ -95,9 +91,11 @@ linkages <- function(klast = 1,nyear = 2){
             degd = degd, dmin = spp.params$DMIN, dmax = spp.params$DMAX,
             frost = spp.params$FROST, rt = temp.mat[i,], itol = spp.params$ITOL,
             mplant = spp.params$MPLANT, nogro = nogro,
-            ksprt = ksprt, sprtnd = spp.params$SPRTND)
+            ksprt = ksprt, sprtnd = spp.params$SPRTND, max.ind = max.ind, smgf=smgf,
+            degdgf = degdgf)
      
      ntrees <- unlist(birth.out$ntrees)
+     ntrees.birth[,i,k] <- unlist(birth.out$ntrees)
      dbh <- unlist(birth.out$dbh)
      nogro <- unlist(birth.out$nogro)
      ksprt <- unlist(birth.out$ksprt)
@@ -106,41 +104,52 @@ linkages <- function(klast = 1,nyear = 2){
      grow.out <- grow(max.ind = max.ind, nspec = nspec, ntrees = ntrees, frt = spp.params$FRT, slta = spp.params$SLTA,
            sltb = spp.params$SLTB, dbh = dbh, fwt = spp.params$FWT, b2 = spp.params$B2,
            b3 = spp.params$B3, itol =spp.params$ITOL, g = spp.params$G, degdgf = degdgf,
-           smgf = smgf, sngf= sngf,frost = spp.params$FROST, rt = temp.mat[i,])
+           smgf = smgf, sngf= sngf,frost = spp.params$FROST, rt = temp.mat[i,], iage = iage,
+           nogro=nogro)
      
      ntrees <- unlist(grow.out$ntrees)
+     ntrees.grow[,i,k] <- unlist(grow.out$ntrees)
      dbh <- unlist(grow.out$dbh)
      awp <- unlist(grow.out$awp)
       
     kill.out<- kill(nspec = nspec, ntrees= ntrees,slta = spp.params$SLTA, sltb = spp.params$SLTB,
            dbh = dbh, agemx = spp.params$AGEMX, ksprt = ksprt,
            sprtmn = spp.params$SPRTMN, sprtmx = spp.params$SPRTMX, iage  = iage,
-           nogro  = nogro,tl = spp.params$TL,rtst = spp.params$RTST, fwt = spp.params$FWT)
+           nogro  = nogro,tl = spp.params$TL,rtst = spp.params$RTST, fwt = spp.params$FWT,
+           max.ind = max.ind, frt = spp.params$FRT,ncohrt = ncohrt)
    
     ntrees <- unlist(kill.out$ntrees)
+    ntrees.kill[,i,k] <- unlist(kill.out$ntrees)
     dbh <- unlist(kill.out$dbh)
     nogro <- unlist(kill.out$nogro)
     ksprt <- unlist(kill.out$ksprt)
     iage <- unlist(kill.out$iage)
     ncohrt <- unlist(kill.out$ncohrt)
     tyl <- unlist(kill.out$tyl)
+    tyl.save[,i,k] <- unlist(kill.out$tyl)
     
     output.out <- output(availn = availn, tyln = tyln, nspec = nspec, frt=spp.params$FRT,
-                         iage = iage,slta = spp.params$SLTA,
-                         sltb = spp.params$SLTB,dbh = dbh,fwt = spp.params$FWT,tyl = tyl)
+                         iage = iage,slta = spp.params$SLTA, max.ind = max.ind,
+                         sltb = spp.params$SLTB,dbh = dbh,fwt = spp.params$FWT,tyl = tyl,
+                         ntrees=ntrees,awp=awp)
     
-    tstem[kyr,iplot] = unlist(output.out$atot) #number of stems
-    tab[kyr,iplot] = unlist(output.out$tbar) #total aboveground biomass
-    fl[kyr,iplot] = unlist(kill.out$tyl)[17] #leaf litter
-    totl[kyr,iplot] = unlist(output.out$tyln) #leaf litter N
-    tnap[kyr,iplot] = unlist(output.out$tynap) #net aboveground production
-    avln[kyr,iplot] = unlist(gmult.out$availn) #available nitrogen
-    cn[kyr,iplot] = unlist(decomp.out$hcn) #humus C:N ratio
-    sco2c[kyr,iplot] = unlist(decomp.out$sco2) #soil co2 evolution
-    som[kyr,iplot] = unlist(decomp.out$ff[19,2]) #soil organic matter
+    tstem[i,k] = unlist(output.out$atot) #number of stems
+    tab[i,k] = unlist(output.out$tbar) #total aboveground biomass
+    fl[i,k] = unlist(kill.out$tyl)[17] #leaf litter
+    totl[i,k] = unlist(output.out$tyln) #leaf litter N
+    tnap[i,k] = unlist(output.out$tynap) #net aboveground production
+    avln[i,k] = unlist(gmult.out$availn) #available nitrogen
+    cn[i,k] = unlist(decomp.out$hcn) #humus C:N ratio
+    sco2c[i,k] = unlist(decomp.out$sco2) #soil co2 evolution
+    som[i,k] = unlist(decomp.out$ff[19,2]) #soil organic matter
+    bar[,i,k] = unlist(output.out$bar) #soil organic matter
+    aet.save[i,k] = aet
+    nogro.save[,i,k] = unlist(kill.out$nogro)
     
+    print(paste("year = ",i))
     }
-    
+    print(paste("PLOT = ",k))
   }
-  
+  return(list(tstem=tstem,tab=tab,fl=fl,totl=totl,tnap=tnap,avln=avln,cn=cn,sco2c=sco2c,
+              som=som,bar=bar,aet.save=aet.save,nogro.save=nogro.save))
 }

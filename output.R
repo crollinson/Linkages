@@ -1,4 +1,6 @@
-output <- function(availn,tyln,nspec,frt,iage,slta,sltb,dbh,fwt,tyl){
+##' @title LINKAGES output function
+##' @author Ann Raiho
+output <- function(availn,tyln,nspec,frt,iage,slta,sltb,dbh,fwt,tyl,max.ind,ntrees,awp){
   
   #initialization
   area = 0 #leaf area
@@ -9,7 +11,7 @@ output <- function(availn,tyln,nspec,frt,iage,slta,sltb,dbh,fwt,tyl){
   ntot = 0 #number of trees
   tyln = tyln*1000 #leaf litter N content from "decomp.r"
   
-  bar = numeric(100)
+  bar = numeric(nspec)
   
   #calculate spp biomass, total biomass, total number of stems, leaf area, and total woody production
   nl = 1
@@ -33,8 +35,8 @@ output <- function(availn,tyln,nspec,frt,iage,slta,sltb,dbh,fwt,tyl){
     tbar = tbar + bar[i]
     nl = nu+1
     #calculate total number of trees per plot
-    ntot = ntot +ntrees[i]
-    if(ntot > 1500) print("too many trees")
+    ntot = ntot + ntrees[i]
+    if(ntot > max.ind) print("too many trees -- output")
   }
   #convert number of treees per plot to number per ha
   atot = ntot
@@ -49,6 +51,7 @@ output <- function(availn,tyln,nspec,frt,iage,slta,sltb,dbh,fwt,tyl){
     bar[j] = bar[j] * .012
   }
 
-  return(list(atot=atot,tbar=tbar,tyln=tyln,tynap=tynap,availn=availn,hcn=hcn,sco2=sco2,ff=ff))
+  return(list(atot=atot,tbar=tbar,tyln=tyln,tynap=tynap,availn=availn,
+              bar=bar))
   
 }

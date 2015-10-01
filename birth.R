@@ -1,5 +1,8 @@
+##' @title LINKAGES birth function
+##' @author Ann Raiho
 birth <- function(nspec,ntrees,frt,iage,slta,sltb,dbh,fwt,switch.mat,
-                  degd,dmin,dmax,frost,rt,itol,mplant,nogro,ksprt,sprtnd){
+                  degd,dmin,dmax,frost,rt,itol,mplant,nogro,ksprt,sprtnd,
+                  max.ind,smgf,degdgf){
   #initialize foliage biomass (folw) and foliage area (fola)
   folw = 0
   fola = 0
@@ -44,7 +47,7 @@ birth <- function(nspec,ntrees,frt,iage,slta,sltb,dbh,fwt,switch.mat,
   if(fola<=2) swtch[2] = FALSE
   
   #browse - a random number simulating the occurence of browsing
-  yfl = runif(1,1,10) #is this the right distribution? AMR
+  yfl = runif(1,0,1)
   browse = yfl
   if(browse > .5) swtch[4] = FALSE
   if(fola < .05) swtch[5] = FALSE
@@ -95,11 +98,11 @@ birth <- function(nspec,ntrees,frt,iage,slta,sltb,dbh,fwt,switch.mat,
       if(itol[nsp] < 2) slite = 1 - exp(-4.64*(al-.05))
       if(slite <= 0) slite = 0
       #reduce max number of seedlings to the extent that light, soil moisture, and degree days are less than optimum for growth of each species
-      yfl = runif(1,1,10)
+      yfl = runif(1,0,1)
       nplant = mplant[nsp] * slite * smgf[nsp] * degdgf[nsp] * yfl
       #see if any stumps of this spp are available for sprouting
       if(ksprt[nsp] > 0 & sprtnd[nsp] > 0){
-        yfl = runif(1,1,10)
+        yfl = runif(1,0,1)
         #if available light is greater than 50% of full sunlight determine number of stump sprouts and add to nplant
         if(al > .5) nplant = nplant + (sprtnd[nsp]*slite*smgf[nsp]*degdgf[nsp]*ksprt[nsp]*yfl)
       }
@@ -113,7 +116,7 @@ birth <- function(nspec,ntrees,frt,iage,slta,sltb,dbh,fwt,switch.mat,
         if(nplant == 0) next
         for(j in 1:nplant){
           ntot = ntot + 1
-          if(ntot > 1500) print("too many trees")
+          if(ntot > max.ind) print("too many trees -- birth")
           nsum = nsum + 1
           ntrees[nsp] = ntrees[nsp] + 1
           itemp[nsum] = 0

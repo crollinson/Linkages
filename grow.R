@@ -1,11 +1,15 @@
-grow <- function(max.ind,nspec,ntrees,frt,slta,sltb,dbh,fwt, b2,b3, itol,g, degdgf,smgf,sngf,frost,rt){
+##' @title LINKAGES growth function
+##' @author Ann Raiho
+
+grow <- function(max.ind,nspec,ntrees,frt,slta,sltb,dbh,fwt, b2,b3, itol,g,
+                 degdgf,smgf,sngf,frost,rt,iage,nogro){
   #initialize wood production
   awp = matrix(0,1,max.ind)
   #calculate total number of trees
   ntot = 0
   for(i in 1:nspec) ntot = ntot + ntrees[i]
   if(ntot == 0) break
-  if(ntot > max.ind) print("too many trees")
+  if(ntot > max.ind) print("too many trees -- grow")
   #initialize canopy leaf biomass profile
   sumla = matrix(0,1,max.ind)
   #loop for calculating canopy profile

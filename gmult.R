@@ -1,3 +1,6 @@
+##' @title LINKAGES gmult function
+##' @author Ann Raiho
+##' 
 gmult <- function(egs,bgs,availn,degd,dmin,dmax,d3,fj,cm1,cm3,cm2,cm4,cm5,nspec){
   tgs = egs - bgs + 1 
   

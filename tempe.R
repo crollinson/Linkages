@@ -1,3 +1,5 @@
+##' @title LINKAGES tempe function
+##' @author Ann Raiho
 tempe <- function(temp.vec){
   ddbase = 5.56 #temp above which degree days are counted
   degd = 0
