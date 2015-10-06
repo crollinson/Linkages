@@ -1,5 +1,21 @@
 ##' @title LINKAGES moist function
-##' @author Ann Raiho
+##' @author Ann Raiho \email{araiho@nd.edu}
+##' 
+##' @param kyr current year
+##' @param temp.vec average temperature by month for current year
+##' @param precip.vec average precipitation by month for current year
+##' @param fc field capacity
+##' @param dry wilting point
+##' @param bgs beginning growing season day of year
+##' @param egs end growing season day of year
+##' @param plat plot latititude
+##' @param clat climate adjustment matrix
+##' 
+##' @description Calculates actual evapotranspiration (AET) for the current year
+##' 
+##' @return aet             actual evapotranspiration (units:mm)
+##' @return fj              total number of dry days
+##' 
 moist <- function(kyr,temp.vec,precip.vec,fc,dry,bgs,egs,plat,clat){
   # adjust latitude pointer
   days = c(31.,28.,31.,30.,31.,30.,31.,31.,30.,31.,30.,31.)

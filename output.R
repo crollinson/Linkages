@@ -1,5 +1,26 @@
 ##' @title LINKAGES output function
-##' @author Ann Raiho
+##' @author Ann Raiho \email{araiho@nd.edu}
+##' 
+##' @param availn available nitrogen
+##' @param tyln leaf litter N content from "decomp.r"
+##' @param nspec number of species
+##' @param frt,slta,sltb,fwt species specific parameters
+##' @param iage age of each individual
+##' @param dbh diameter of each individual
+##' @param tyl total yearly litter
+##' @param max.ind maximum number of individual
+##' @param ntrees number of trees of each species
+##' @param awp aboveground woody production
+##' 
+##' @description    OUTPUT coverts model variables into ecosystem variables of interest
+##'   
+##' @return atot total number of trees per ha
+##' @return tbar total aboveground biomass
+##' @return tyln leaf litter N content
+##' @return tynap total aboveground production
+##' @return availn available N
+##' @return bar specieis biomass t/ha
+##' 
 output <- function(availn,tyln,nspec,frt,iage,slta,sltb,dbh,fwt,tyl,max.ind,ntrees,awp){
   
   #initialization

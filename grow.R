@@ -1,6 +1,24 @@
 ##' @title LINKAGES growth function
-##' @author Ann Raiho
-
+##' @author Ann Raiho \email{araiho@nd.edu}
+##' 
+##' @param max.ind maximum number of individuals
+##' @param nspec number of species
+##' @param ntrees number of trees of each species
+##' @param frt, slta, sltb, dbh, fwt, b2, b3, itol, g, frost, and rt species specific parameters
+##' @param degdgf growing degree day growth factor from gmult.R
+##' @param smgf soil moisture growth factor from gmult.R
+##' @param sngf soil nitrogen growth factor from gmult.R
+##' @param iage age of each individual
+##' @param nogro flags slow growing individuals
+##' 
+##' @description    GROW CALCULATES DIAMETER GROWTH FOR EACH TREE
+##'   BY DECREASING MAXIMAL GROWTH TO THE EXTENT THAT THE MOST
+##'   LIMITING RESOURCE IS LESS THAN OPTIMAL.
+##'   
+##' @return dbh diameter of each individual
+##' @return ntrees number of trees of each species 
+##' @return awp aboveground woody production
+##' 
 grow <- function(max.ind,nspec,ntrees,frt,slta,sltb,dbh,fwt, b2,b3, itol,g,
                  degdgf,smgf,sngf,frost,rt,iage,nogro){
   #initialize wood production

@@ -1,5 +1,23 @@
 ##' @title LINKAGES plotin function
-##' @author Ann Raiho
+##' @author Ann Raiho \email{araiho@nd.edu}
+##' 
+##' @param iplot               number of plots
+##' @param basesc              initial humus weight
+##' @param basesn              initial humus nitrogen content
+##' @param max.ind             maximum number of individuals
+##' @param nspec               number of species in simulation
+##' 
+##' @description Sets up initial conditions for LINAKGES
+##' 
+##' @return ntrees             matrix for number of trees for each species
+##' @return dbh                matrix for diameter at breast height for each tree
+##' @return nogro              used to flag slow growing trees
+##' @return ksprt              used to flag trees eligible to sprout
+##' @return iage               matrix for age of each tree
+##' @return C.mat              matrix for data on litter cohorts
+##' @return ncohrt             number of cohorts
+##' @return tyl                total yearly litter
+##' 
 plotin <- function(iplot,basesc,basesn,max.ind,nspec){
   
   ntrees <- matrix(0,1,nspec) #contains number of trees for each species
@@ -16,7 +34,7 @@ plotin <- function(iplot,basesc,basesn,max.ind,nspec){
   
   tyl <- matrix(0,1,20) #contains this year's litter
   
-  return(list(iplot=iplot,ntrees=ntrees,dbh=dbh,nogro=nogro,ksprt=ksprt,
+  return(list(ntrees=ntrees,dbh=dbh,nogro=nogro,ksprt=ksprt,
               iage=iage,C.mat=C.mat,ncohrt=ncohrt,tyl=tyl))
 
 }

@@ -1,5 +1,37 @@
 ##' @title LINKAGES birth function
-##' @author Ann Raiho
+##' @author Ann Raiho \email{araiho@nd.edu}
+##' 
+##' @param nspec number of species
+##' @param ntrees number of trees of each species
+##' @param iage age of each individual
+##' @param dbh diameter of each individual
+##' @param mplant, sprtnd,frt,slta,sltb,fwt,dmin,dmax,frost,rt,itol species specific parameters
+##' @param switch.mat TRUE/FALSE switches for each species
+##' @param degd growing degree days from tempe.R
+##' @param nogro flags individuals that aren't growing well
+##' @param ksprt flags individuals that could sprout
+##' @param max.ind maximum number of individuals in a plot
+##' @param smgf soil moisture growing factor from gmult.R
+##' @param degdgf growing degree day growing factor from gmult.R
+##' 
+##' @description    BIRTH CALCULATES SEEDLING AND SPROUT BIRTH BASED ON
+##'    SPECIES FECUNDITY, SEEDBED CONDITIONS, SUSCEPTIBILITY TO BROWSING,
+##'    AND THE DEGREE TO WHICH LIGHT, SOIL MOISTURE, AND DEGREE DAYS ARE
+##'   LESS THAN OPTIMUM FOR GROWTH. SOIL MOISTURE AND DEGREE DAY
+##'   MULTIPLIERS ARE SUPPLIED BY SUBROUTINE GMULT.
+##'   A SPECIES CAN HAVE SPROUTS IF AT LEAST ONE
+##'    TREE WITH DIAMETER BETWEEN SPRTMN AND SPRTMX DIED LAST
+##'    YEAR (KSPRT INCREMENTED BY 1 IN KILL).
+##'    RANDOM NUMBERS USED TO DETERMINE OCCURENCE OF BROWSING, NUMBERS
+##'    OF SEEDLINGS AND SPROUTS, AND DBH SUPPLIED BY rand.
+##' 
+##' @return iage age of each individual 
+##' @return dbh diameter of each individual 
+##' @return nogro flags individuals growing slowly
+##' @return ntrees number of trees of each species 
+##' @return newtr records species considered 'eligible'
+##' @return ksprt flags individuals that could sprout
+##' 
 birth <- function(nspec,ntrees,frt,iage,slta,sltb,dbh,fwt,switch.mat,
                   degd,dmin,dmax,frost,rt,itol,mplant,nogro,ksprt,sprtnd,
                   max.ind,smgf,degdgf){

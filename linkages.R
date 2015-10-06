@@ -1,22 +1,33 @@
 ##' @title LINKAGES main function
-##' @author Ann Raiho
-
+##' @author Ann Raiho \email{araiho@nd.edu}
+##' 
+##' @param iplot    PEcAn settings object
+##' @param nyear          data.frame of initial condition sample (nens X nstate)
+##' @param nspec       data.frame of model parameter sample (nense X nstate)
+##' @param fc         data.frame of observations with columns: mean, sd
+##' @param dry         data.frame of observations with columns: mean, sd
+##' @param bgs         data.frame of observations with columns: mean, sd
+##' @param egs         data.frame of observations with columns: mean, sd
+##' @param max.ind         data.frame of observations with columns: mean, sd
+##' @param plat         data.frame of observations with columns: mean, sd
+##' 
+##' @description Main function for running all LINKAGES subroutines
+##' 
+##' @return several things ---> should this be different?
+##' 
 linkages <- function(iplot, nyear,nspec, fc, dry, bgs, egs, max.ind, plat){
   
-  source("input.R")
-  input(nyear = nyear) #add tables with species parameter values and initial conditions and temperature and precip means
+  source("plotin.R") #initial conditions subroutine (left separate from main function for data assimilation)
+  source("tempe.R") #calculates total growing degree days for each year
+  source("moist.R") #calculates actual evapotraspiration for each year
+  source("decomp.R") #calculates carbon and nitrogen flow through soil
+  source("gmult.R") #calculates growth multipliers (soil nitrogen, soil moisture, and growing degree day)
+  source("birth.R") #calculates seedling and sprout birth
+  source("grow.R") #calculates diameter increment of each individual
+  source("kill.R") #kills trees by age dependent mortality
+  source("output.R") #converts model variables into ecosystem variables of interest
   
-  source("plotin.R")
-  source("tempe.R")
-  source("moist.R")
-  source("decomp.R")
-  source("gmult.R")
-  source("birth.R")
-  source("grow.R")
-  source("kill.R")
-  source("output.R")
-  
-  #Storage
+  #Storage #this should probably be outside the function too?
   
   tstem = matrix(0,nyear,iplot) #number of stems
   tab = matrix(0,nyear,iplot) #total aboveground biomass

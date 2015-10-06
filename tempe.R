@@ -1,5 +1,12 @@
 ##' @title LINKAGES tempe function
-##' @author Ann Raiho
+##' @author Ann Raiho \email{araiho@nd.edu}
+##' 
+##' @param temp.vec  mean temperature for each month
+##' 
+##' @description Calculates total growing degree days for each year, i
+##' 
+##' @return degd total growing degree days for each year
+##' 
 tempe <- function(temp.vec){
   ddbase = 5.56 #temp above which degree days are counted
   degd = 0

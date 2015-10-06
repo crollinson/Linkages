@@ -1,5 +1,23 @@
 ##' @title LINKAGES gmult function
-##' @author Ann Raiho
+##' @author Ann Raiho \email{araiho@nd.edu}
+##' 
+##' @param bgs   beginning of growing season day of year
+##' @param egs    end of growing season day of year
+##' @param availn   available nitrogen
+##' @param degd     total growing degree days
+##' @param dmin, dmax, d3, cm1-5        species specific parameters
+##' @param nspec     number of species
+##' @param fj         number of dry days
+##' 
+##' @description    GMULT CALCULATES DEGREE DAY, SOIL MOISTURE, AND SOIL
+##'                 NITROGEN MULTIPLIERS USED IN SUBROUTINES BIRTH AND GROW BASED
+##'                 ON ON DEGD (SUPPLIED BY TEMPE), FJ (SUPPLIED BY MOIST), AND
+##'                 AVAILN (SUPPLIED BY DECOMP), RESPECTIVELY.
+##' 
+##' @return smgf soil moisture growth factor
+##' @return sngf soil nitrogen growth factor
+##' @return degdgf growing degree day growth factor
+##' @return availn available nitrogen
 ##' 
 gmult <- function(egs,bgs,availn,degd,dmin,dmax,d3,fj,cm1,cm3,cm2,cm4,cm5,nspec){
   tgs = egs - bgs + 1 

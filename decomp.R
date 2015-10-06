@@ -1,5 +1,32 @@
 ##' @title LINKAGES decomp function
-##' @author Ann Raiho
+##' @author Ann Raiho \email{araiho@nd.edu}
+##' 
+##' @param fdat current year
+##' @param aet average temperature by month for current year
+##' @param ncohrt average precipitation by month for current year
+##' @param fc field capacity
+##' @param dry wilting point
+##' @param tyl beginning growing season day of year
+##' @param C.mat end growing season day of year
+##' 
+##' @description DECOMP CALCULATES CARBON AND NITROGEN FLOWS THROUGH
+##'    SOIL. AVAILABLE N (AVAILN) IS USED IN GMULT TO CALCULATE
+##'   SOIL NITROGEN GROWTH MULTIPLIERS. AET IS FED IN FROM MOIST.
+##'    THIS YEAR'S LEAF, TWIG, ROOT, AND WOOD LITTER IS FED IN FROM KILL
+##'   (ARRAY TYL). THE SIMULATION STARTS ON BARE GROUND (ONLY HUMUS
+##'   PRESENT. BASESC AND BASESN ARE STARTING HUMUS WEIGHT AND N
+##'   CONTENTS READ IN INPUT). THREE TYPES OF SOIL ORGANIC MATTER ARE
+##'    RECOGNIZED: COHORTS EITHER IMMOBILIZING OR RAPIDLY MINERALIZING
+##'    NITROGEN AND A HOMOGENOUS HUMUS POOL SLOWLY MINERALIZING N. 
+##' 
+##' @return ff weights and n content of forest floor by litter type
+##' @return availn available N
+##' @return tyln leaf litter N content
+##' @return hcn humus C:N ratio
+##' @return sco2 total soil co2-c
+##' @return ncohrt number of cohorts
+##' @return C.mat matrix for data on litter cohorts
+##' 
 decomp <- function(fdat,aet,ncohrt,fc,dry,tyl,C.mat){
   
   #Initialization
@@ -155,7 +182,8 @@ decomp <- function(fdat,aet,ncohrt,fc,dry,tyl,C.mat){
   ff[19,2] = ff[19,2] + ff[18,2] + ff[13,2]
   ff[19,3] = ff[19,3] + ff[18,3] + ff[13,3]
   
-  return(list(ff=ff, availn=availn, tyln = tyln, hcn=hcn, sco2=sco2, ncohrt=ncohrt, C.mat=C.mat))
+  return(list(ff=ff, availn=availn, tyln = tyln, hcn=hcn, sco2=sco2, ncohrt=ncohrt,
+              C.mat=C.mat))
 }
 
 

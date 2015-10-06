@@ -1,5 +1,32 @@
 ##' @title LINKAGES kill function
-##' @author Ann Raiho
+##' @author Ann Raiho \email{araiho@nd.edu}
+##' 
+##' @param max.ind maximum number of individuals
+##' @param nspec number of species
+##' @param ntrees number of trees of each species
+##' @param slta, sltb, agemx, sprtmn, sprtmx, tl, rtst, fwt, and frt species specific parameters
+##' @param ncohrt number of cohorts
+##' @param nogro flags slow growing individuals
+##' @param iage age of each individual
+##' @param dbh diameter of each individual
+##' @param ksprt flags if stump can sprout
+##' 
+##' @description    KILL KILLS TREES BY AGE DEPENDENT MORTALITY (ONLY 1%
+##'   REACH MAXIMUM AGE) AND AGE INDEPENDENT MORTALITY (PROBABILITY OF
+##'   SURVIVING 10 CONSECUTIVE YEARS OF SLOW GROWTH (SEE GROW) = 1%).
+##'   DECISIONS ON WHETHER OR NOT TO KILL A TREE ARE PARTLY BASED ON
+##'   RANDOM NUMBERS SUPPLIED BY rand.
+##'   KILL ALSO CALCULATES LITTER AMOUNTS, WHICH ARE DECAYED IN
+##'   SUBROUTINE DECOMP.
+##'   
+##' @return dbh diameter of each individual
+##' @return ntrees number of trees of each species 
+##' @return iage age of each individual 
+##' @return nogro flags individuals growing slowly 
+##' @return ncohrt number of cohorts
+##' @return tyl total yearly litter, 
+##' @return ksprt flags stumps that could sprout
+##' 
 kill <- function(nspec, ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,
                  nogro,tl,rtst,fwt,max.ind,frt,ncohrt){
   knt = 0 
@@ -87,6 +114,7 @@ kill <- function(nspec, ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,
     nogro[i] = 0
   }
   
-  return(list(ntrees = ntrees, dbh = dbh, iage = iage, nogro = nogro, ncohrt = ncohrt, tyl = tyl, ksprt = ksprt))
+  return(list(ntrees = ntrees, dbh = dbh, iage = iage, nogro = nogro, ncohrt = ncohrt,
+              tyl = tyl, ksprt = ksprt))
   
 }

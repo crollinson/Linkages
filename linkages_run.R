@@ -13,6 +13,10 @@ egs = 256
 max.ind=15000
 plat = 45
 
+source("input.R")
+input(nyear = nyear) #add tables with species parameter values and initial 
+#conditions and temperature and precip means
+
 source("linkages.R")
 linkages.out <- linkages(iplot = iplot, nyear = nyear,nspec = nspec, fc = fc, dry = dry,
                          bgs = bgs, egs = egs, max.ind=max.ind, plat = plat)
