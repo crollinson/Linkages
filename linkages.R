@@ -74,7 +74,7 @@ linkages <- function(iplot, nyear,nspec, fc, dry, bgs, egs, max.ind, plat){
       fj <- unlist(moist.out$fj)
       
       decomp.out <- decomp(fdat = fdat, aet = aet,
-                           ncohrt = ncohrt, fc = 28, dry = 14,
+                           ncohrt = ncohrt, fc = fc, dry = dry,
                            tyl = tyl, C.mat = C.mat)
       
       ff <- unlist(decomp.out$ff)
@@ -122,6 +122,8 @@ linkages <- function(iplot, nyear,nspec, fc, dry, bgs, egs, max.ind, plat){
      ntrees.grow[,i,k] <- unlist(grow.out$ntrees)
      dbh <- unlist(grow.out$dbh)
      awp <- unlist(grow.out$awp)
+     nogro <- unlist(grow.out$nogro)
+     
       
     kill.out<- kill(nspec = nspec, ntrees= ntrees,slta = spp.params$SLTA, sltb = spp.params$SLTB,
            dbh = dbh, agemx = spp.params$AGEMX, ksprt = ksprt,
@@ -153,7 +155,7 @@ linkages <- function(iplot, nyear,nspec, fc, dry, bgs, egs, max.ind, plat){
     cn[i,k] = unlist(decomp.out$hcn) #humus C:N ratio
     sco2c[i,k] = unlist(decomp.out$sco2) #soil co2 evolution
     som[i,k] = unlist(decomp.out$ff[19,2]) #soil organic matter
-    bar[,i,k] = unlist(output.out$bar) #soil organic matter
+    bar[,i,k] = unlist(output.out$bar) #species biomass
     aet.save[i,k] = aet
     nogro.save[,i,k] = unlist(kill.out$nogro)
     
@@ -161,6 +163,7 @@ linkages <- function(iplot, nyear,nspec, fc, dry, bgs, egs, max.ind, plat){
     }
     print(paste("PLOT = ",k))
   }
-  return(list(tstem=tstem,tab=tab,fl=fl,totl=totl,tnap=tnap,avln=avln,cn=cn,sco2c=sco2c,
+  return(list(ntrees.birth=ntrees.birth, ntrees.kill = ntrees.kill, tstem=tstem,
+              tab=tab,fl=fl,totl=totl,tnap=tnap,avln=avln,cn=cn,sco2c=sco2c,
               som=som,bar=bar,aet.save=aet.save,nogro.save=nogro.save))
 }

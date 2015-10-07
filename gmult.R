@@ -30,7 +30,7 @@ gmult <- function(egs,bgs,availn,degd,dmin,dmax,d3,fj,cm1,cm3,cm2,cm4,cm5,nspec)
   sngf = matrix(0,1,nspec)
   
   for(i in 1:nspec){
-    degdgf[i] = 4*(degd - dmin[i])*(dmax[i] - degd) / ((dmax[i] - dmin[i]) ^ 2)
+    degdgf[i] =(4 * (degd - dmin[i]) * (dmax[i] - degd)) / ((dmax[i] - dmin[i]) ^ 2) #Botkin 1972 EQ#10
     
     if(degdgf[i] < 0 ) degdgf[i] = 0
     if(degdgf[i] != 0){

@@ -45,10 +45,10 @@ kill <- function(nspec, ntrees,slta,sltb,dbh,agemx,ksprt,sprtmn,sprtmx,iage,
       #calculate basal area
       ba = ba + .0314 * (dbh[k]*.5) ^ 2
       #kill trees based on probability that only 1% reach max age
-      yfl = runif(1,0,1)
-      if(yfl <= (4.605/agemx[i])) {
+      yfl = runif(1,0,1) #this changes everything... 
+      if(yfl > pexp(agemx[i],1/(agemx[i]/2)) ) {
         ntrees[i] = ntrees[i] - 1
-        #check to see if dead tree can sump sprout increment skprt if tree can sprout
+        #check to see if dead tree can stump sprout increment skprt if tree can sprout
         if(dbh[k]>sprtmn[i] & dbh[k]<sprtmx[i]) ksprt[i] = ksprt[i] + 1
         #calculate woody litter in t/ha
         bd = .60

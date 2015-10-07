@@ -106,5 +106,5 @@ moist <- function(kyr,temp.vec,precip.vec,fc,dry,bgs,egs,plat,clat){
     #conver aet from cm to mm
     aet <<- aet * 10
   }
-  return(list(aet=aet,fj=fj))
+  return(list(aet=aet,fj=dd))
 }

@@ -35,6 +35,9 @@
 birth <- function(nspec,ntrees,frt,iage,slta,sltb,dbh,fwt,switch.mat,
                   degd,dmin,dmax,frost,rt,itol,mplant,nogro,ksprt,sprtnd,
                   max.ind,smgf,degdgf){
+  
+  switch.mat1 = matrix(as.logical(switch.mat),72,5)
+  
   #initialize foliage biomass (folw) and foliage area (fola)
   folw = 0
   fola = 0
@@ -89,21 +92,26 @@ birth <- function(nspec,ntrees,frt,iage,slta,sltb,dbh,fwt,switch.mat,
   
   # end recruitment of aspen, pin cherry, and most pine if available light is < 60% of full sunlight and recruitment of paper birch and white pine if available light is <30% of full sunlight
   for(i in 1:nspec){
-#     if(al<.60 & i == 20) break
-#     if(al<.30 & i == 25) break
-#     if(al<.60 & i == 58) break
-#     if(al<.60 & i == 59) break
-#     if(al<.60 & i == 60) break
-#     if(al<.60 & i == 30) break
-#     if(al<.60 & i == 31) break
-#     if(al<.60 & i == 32) break
-#     if(al<.30 & i == 33) break
-#     if(al<.60 & i == 34) break
-#     if(al<.60 & i == 35) break
-#     if(al<.30 & i == 55) break
-    for(k in 3:5){
-      if(switch.mat[i,k] & swtch[k]) next
-    }
+     if(al<.60 & i == 29) next
+    
+     if(al<.30 & i == 34) next
+    
+     if(al<.60 & i == 60) next
+     if(al<.60 & i == 61) next
+     if(al<.60 & i == 13) next
+    
+     if(al<.60 & i == 38) next
+     if(al<.60 & i == 39) next
+     if(al<.60 & i == 40) next
+     if(al<.30 & i == 41) next
+     if(al<.60 & i == 7) next
+     if(al<.60 & i == 42) next
+     if(al<.30 & i == 42) next
+    
+    if(switch.mat1[i,3] & swtch[3]) next
+    if(switch.mat1[i,4] & swtch[4]) next
+    if(switch.mat1[i,5] & swtch[5]) next
+    
     #allow only those spp whose degree day tolerances span the simulated degree days this year to be eligible for seeding
     if(degd < dmin[i] | degd > dmax[i]) next
     #allow only those species whose frost tolerance is less than the January mean temperature to be eligible for seeding
@@ -114,14 +122,9 @@ birth <- function(nspec,ntrees,frt,iage,slta,sltb,dbh,fwt,switch.mat,
   }
   
   #check to see if there are any new trees
-  itemp = iage; dtemp = iage; ntemp = iage # added this AMR
   if(nw != 0){
     #place iage, dbh, and nogro into temporary arrays 
-    for(i in 1:ntot){
-      itemp[i] = iage[i] #added storage above AMR
-      dtemp[i] = dbh[i]
-      ntemp[i] = nogro[i]
-    }
+    itemp = iage; dtemp = dbh; ntemp = nogro
     #begin main loop for planting
     for(k in 1:nw){
       nsp = newtr[k]
@@ -132,11 +135,13 @@ birth <- function(nspec,ntrees,frt,iage,slta,sltb,dbh,fwt,switch.mat,
       #reduce max number of seedlings to the extent that light, soil moisture, and degree days are less than optimum for growth of each species
       yfl = runif(1,0,1)
       nplant = mplant[nsp] * slite * smgf[nsp] * degdgf[nsp] * yfl
+      if(nplant>500) nplant=500 #HACK
       #see if any stumps of this spp are available for sprouting
       if(ksprt[nsp] > 0 & sprtnd[nsp] > 0){
         yfl = runif(1,0,1)
         #if available light is greater than 50% of full sunlight determine number of stump sprouts and add to nplant
         if(al > .5) nplant = nplant + (sprtnd[nsp]*slite*smgf[nsp]*degdgf[nsp]*ksprt[nsp]*yfl)
+        if(nplant>500) nplant=500 #HACK
       }
       nsum = 0
       for(i in 1:nsp){
@@ -148,7 +153,7 @@ birth <- function(nspec,ntrees,frt,iage,slta,sltb,dbh,fwt,switch.mat,
         if(nplant == 0) next
         for(j in 1:nplant){
           ntot = ntot + 1
-          if(ntot > max.ind) print("too many trees -- birth")
+          if(ntot > max.ind) print(paste("too many trees -- birth -- species", i))
           nsum = nsum + 1
           ntrees[nsp] = ntrees[nsp] + 1
           itemp[nsum] = 0
